@@ -30,7 +30,7 @@ number = 0
 
 #this filepath must contain a file with 3 values seperates by commas in each line, the first being a nationality, the second a first name of someone with that nationality
 #and the third their last name.
-filepath = "/Users/franziskahafner/PythonProjects/webscraping_for_lena/scraping_googlemaps/own_name_tagging/names_with_nationality_500_per_nat.csv"
+filepath = "FILEPATH.csv"
 with open (filepath, "r") as f:
     for line in f.readlines():
         line = line.strip().split(",")
