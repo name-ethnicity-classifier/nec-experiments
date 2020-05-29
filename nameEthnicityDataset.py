@@ -31,14 +31,13 @@ class NameEthnicityDatset(torch.utils.data.Dataset):
 
         return one_hot_target
 
-    # loads sample from dataset, creates one-hot enc. from target and returns
     def __getitem__(self, idx: int) -> torch.Tensor:
         """ get sample (batch) from dataset
 
         :param int idx: index of dataset (iterator of training-loop)
         :return tensor: preprocessed sample and target
         """
-        
+
         sample, target = self.dataset[idx][0], self.dataset[idx][1]
         target = self._create_one_hot(target)
 
