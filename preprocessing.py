@@ -1,8 +1,9 @@
+import json
+
 #abc_dict is a dictionary where the letters "a"-"z" and " " and "," and "-" are keys to lists representing these values in the matrix_name_list
 abc_dict = {}
 abc_list = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"," ",",","-", "'",'’', 'é', 'è','ñ','í','ó','á','`','ü','ö','ã','ä','ø','å','õ','æ','ń','ć','ò','ë','ç','ş','ğ','@','š','č','ž','ð','þ','ú','ě','ý','ň','ř']
 a = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-
 for i in range(len(abc_list)):
     abc_dict[abc_list[i]]= a[-i:]+a[:-i]
 
@@ -31,7 +32,7 @@ number = 0
 
 #this filepath must contain a file with 3 values seperates by commas in each line, the first being a nationality, the second a first name of someone with that nationality
 #and the third their last name.
-filepath = "FILEPATH"
+filepath = "PATHNAME"
 with open (filepath, "r") as f:
     for line in f.readlines():
         line = line.strip().split(",")
@@ -56,3 +57,5 @@ for country in matrix_name_dict:
 print("A name from country with code ", matrix_name_list[0][0], " is ",get_name_from_matrix(matrix_name_list[0][1][0], abc_list))
 print("A name from country with code ", matrix_name_list[3][0], " is ",get_name_from_matrix(matrix_name_list[3][1][0], abc_list))
 print("A name from country with code ", matrix_name_list[20][0], " is ",get_name_from_matrix(matrix_name_list[20][1][52], abc_list))
+
+json.dumps(matrix_name_list)
