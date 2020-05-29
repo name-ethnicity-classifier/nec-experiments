@@ -1,7 +1,8 @@
 #abc_dict is a dictionary where the letters "a"-"z" and " " and "," and "-" are keys to lists representing these values in the matrix_name_list
 abc_dict = {}
-abc_list = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"," ",",","-"]
-a = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+abc_list = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"," ",",","-", "'",'’', 'é', 'è','ñ','í','ó','á','`','ü','ö','ã','ä','ø','å','õ','æ','ń','ć','ò','ë','ç','ş','ğ','@','š','č','ž','ð','þ','ú','ě','ý','ň','ř']
+a = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+removal_list = [".", '?', '(', ')','"','/','0','4','7','2','1','3',':','&','*']
 for i in range(len(abc_list)):
     abc_dict[abc_list[i]]= a[-i:]+a[:-i]
 
@@ -30,7 +31,7 @@ number = 0
 
 #this filepath must contain a file with 3 values seperates by commas in each line, the first being a nationality, the second a first name of someone with that nationality
 #and the third their last name.
-filepath = "FILEPATH.csv"
+filepath = "/Users/franziskahafner/PythonProjects/webscraping_for_lena/scraping_googlemaps/analysing_data/name-ethnicity-classification/names_with_nationality_500_per_nat.csv"
 with open (filepath, "r") as f:
     for line in f.readlines():
         line = line.strip().split(",")
