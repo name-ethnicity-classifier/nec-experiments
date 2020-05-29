@@ -14,6 +14,14 @@ class NameEthnicityDatset(torch.utils.data.Dataset):
             self.dataset = json.load(f)
     
     def _create_one_hot(self, int_representation: int) -> list:
+        """ creates one-hot representation of class 
+
+        :param int_representation: class number n [0; class_amount-1]
+        :type int_representation: int
+        :rtype: list
+        :return: ie, class_amount = 5 ; int_representation = 1 -> [0, 1, 0, 0, 0]
+        """
+
         zero_hot_target = np.zeros((self.class_amount))
         one_hot_target = empty_target[int_representation] = 1
 
@@ -25,13 +33,3 @@ class NameEthnicityDatset(torch.utils.data.Dataset):
 
         return torch.Tensor(sample), torch.Tensor(target)
 
-
-
-# docstring
-""" creates one-hot representation of class 
-
-:param int_representation: class number n [0; class_amount-1]
-:type int_representation: int
-:rtype: list
-:return: ie, class_amount = 5 ; int_representation = 1 -> [0, 1, 0, 0, 0]
-"""
