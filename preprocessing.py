@@ -1,4 +1,6 @@
 import pickle
+import random
+
 with open("dict_chosen_names.pickle",'rb') as o:
     dict_chosen_names = pickle.load(o)
 
@@ -44,12 +46,12 @@ for key in dict_chosen_names:
         else:
             matrix_name_dict[number]+=[get_matrix_from_name(name, abc_dict)]
         
-#matrix_name_list is a list with sub-lists containing information on one nationality, 
-#each of these sublists containing the number representing the nationality on index 0
-#and names of people with this nationality stored in a list at index 1, each name being a matrix.
+#matrix_name_list is a list with sub-lists, each sublist containing a matrix representing a name on index 0 and a number representing a nationality on index 1.
 matrix_name_list = []
 for country in matrix_name_dict:
-    matrix_name_list += [[country, matrix_name_dict[country]]]
+    for name in matrix_name_dict[country]:
+        matrix_name_list += [[country,name]]
+random.shuffle(matrix_name_list)
 
 #dumping matrix_name_list as pickle file:
 with open("matrix_name_list.pickle",'wb') as o:
@@ -59,8 +61,8 @@ with open("matrix_name_list.pickle",'wb') as o:
 #with open("matrix_name_list.pickle",'rb') as o:
 #    dmatrix_name_list = pickle.load(o)
 
-#examples of how to access country-code and name:
-#print(matrix_name_list)
-print("A name from country with code ", matrix_name_list[0][0], " is ",get_name_from_matrix(matrix_name_list[0][1][0], abc_list))
-print("A name from country with code ", matrix_name_list[3][0], " is ",get_name_from_matrix(matrix_name_list[10][1][200], abc_list))
-print("A name from country with code ", matrix_name_list[20][0], " is ",get_name_from_matrix(matrix_name_list[20][1][1999], abc_list))
+#example of how to access country-code and name:
+#country code:
+print(matrix_name_list[10][0])
+#name:
+print(get_name_from_matrix(matrix_name_list[10][1], abc_list))
