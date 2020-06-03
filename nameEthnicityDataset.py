@@ -1,11 +1,11 @@
 
 import torchvision
 import torch
-import json
+import pickle
 import numpy as np
 
 
-class NameEthnicityDatset(torch.utils.data.Dataset):
+class NameEthnicityDataset(torch.utils.data.Dataset):
     def __init__(self, root_dir: str="", class_amount: int=10):
         """ constructor
 
@@ -16,8 +16,8 @@ class NameEthnicityDatset(torch.utils.data.Dataset):
         self.root_dir = root_dir
         self.class_amount = class_amount
 
-        with open(self.root_dir, "r") as f:
-            self.dataset = json.load(f)
+        with open(self.root_dir, "rb") as f:
+            self.dataset = pickle.load(f)#[:1000]
     
     def _create_one_hot(self, int_representation: int) -> list:
         """ create one-hot encoding of the target
@@ -26,10 +26,12 @@ class NameEthnicityDatset(torch.utils.data.Dataset):
         :return list: ie. int_representation = 2 -> [0, 0, 1, ..., 0]
         """
 
-        zero_hot_target = np.zeros((self.class_amount))
-        one_hot_target = empty_target[int_representation] = 1
+        int_representation -= 1
+        #one_hot_target = np.zeros((self.class_amount))
+        #one_hot_target[int_representation] = 1
 
-        return one_hot_target
+        #return one_hot_target
+        return [int_representation]
 
     def __getitem__(self, idx: int) -> torch.Tensor:
         """ get sample (batch) from dataset
@@ -38,7 +40,13 @@ class NameEthnicityDatset(torch.utils.data.Dataset):
         :return tensor: preprocessed sample and target
         """
 
-        sample, target = self.dataset[idx][0], self.dataset[idx][1]
+        sample, target = self.dataset[idx][1], self.dataset[idx][0]
         target = self._create_one_hot(target)
+        
+        # non_padded_batch is the original batch, which is not getting padded so it can be converted back to string
+        non_padded_sample = sample
 
-        return torch.Tensor(sample), torch.Tensor(target)
+        return torch.Tensor(sample), torch.Tensor(target).type(torch.LongTensor), non_padded_sample
+
+    def __len__(self):
+        return len(self.dataset)
