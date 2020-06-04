@@ -15,7 +15,14 @@ from nameEthnicityDataset import NameEthnicityDataset
 
 torch.manual_seed(0)
 
+
 def custom_collate(batch):
+    """ adds custom dataloader feature: batch padding for the sample-batch (the batch containing the one-hot-enc. names)
+
+    :param batch: three batches -> non-padded sample-batch, target-batch, non-padded sample-batch (again)
+    :return torch.Tensor: padded sample-batch, target-batch, non-padded sample-batch
+    """
+
     batch_size = len(batch)
 
     sample_batch, target_batch, sequence_lengths, non_padded_batch = [], [], [], []
@@ -104,8 +111,6 @@ def validate_accuracy(y_true, y_pred, threshold: float) -> float:
         output_empty[output] = 1
         output = output_empty
 
-        # output = [1 if e >= threshold else 0 for e in output]
-
         if list(target) == list(output):
             correct_in_batch += 1
     
@@ -117,8 +122,8 @@ def show_progress(epochs: int, epoch: int, train_loss: float, train_accuracy: fl
     
     :param int epochs: amount of total epochs
     :param int epoch: current epoch
-    :param float loss: train-loss
-    :param float val_accuracy/val_loss: validation accuracy/loss
+    :param float train_loss/train_accuracy: train-loss, train-accuracy
+    :param float val_loss/val_accuracy: validation accuracy/loss
     :return None
     """
 
@@ -131,7 +136,7 @@ def show_progress(epochs: int, epoch: int, train_loss: float, train_accuracy: fl
     print("epoch {} train_loss: {} - train_acc: {} - val_loss: {} - val_acc: {}".format(epochs, train_loss, train_accuracy, val_loss, val_accuracy), "\n")
 
 
-def onehot_to_char(one_hot_name: list=[]) -> str:
+def onehot_to_string(one_hot_name: list=[]) -> str:
     """ convert one-hot encoded name back to string
 
     :param list one_hot_name: one-hot enc. name
@@ -154,13 +159,23 @@ def onehot_to_char(one_hot_name: list=[]) -> str:
     return name
 
 
+def string_to_onehot(string_name: str="") -> list:
+    """ create one-hot encoded name
 
-"""with open("datasets/matrix_name_list.pickle",'rb') as o:
-    data = pickle.load(o)
+    :param str name: name to encode
+    :return list: list of all one-hot encoded letters of name
+    """
 
-print(len(data))
-print(len(data[0]))
-print(len(data[0][1][0]))
+    alphabet = list(string.ascii_lowercase.strip()) + [" ", "-"]
 
-print(onehot_to_char(data[2][1]))
-"""
+    full_name_onehot = []
+    for char in string_name:
+        char_idx = alphabet.index(char)
+
+        one_hot_char = np.zeros((28))
+        one_hot_char[char_idx] = 1
+
+        full_name_onehot.append(one_hot_char)
+    
+    return full_name_onehot
+
