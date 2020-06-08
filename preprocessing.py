@@ -6,14 +6,14 @@ import random
 #recommended number_of_names_per_country:
 #level_medium_clusters: --> 5.500
 #level_big_clusters: --> 42.000
-number_of_names_per_country = 200
+number_of_names_per_country = 5000
 
 #only one of these boolean values should be true, it decides if the nationalities should be clusterred and in which way they should be clustered
 level_nationality = True
 level_medium_clusters = False
 level_big_clusters = False
 
-with open("dict_chosen_names.pickle",'rb') as o:
+with open("datasets/dict_chosen_names.pickle",'rb') as o:
     dict_chosen_names = pickle.load(o)
 
 #abc_dict is a dictionary where the letters "a"-"z" and " " and "-" are keys to lists representing these values in the matrix_name_list
@@ -120,6 +120,7 @@ for key in dict_chosen_names:
 matrix_name_list = []
 nr_of_countries = 0
 list_countries_used = []
+
 for country in matrix_name_dict:
     if len(matrix_name_dict[country])>= number_of_names_per_country:
         list_countries_used += [country]
@@ -127,12 +128,13 @@ for country in matrix_name_dict:
         names = matrix_name_dict[country]
         random.shuffle(names)
         names = names[:number_of_names_per_country]
+
         for name in names:
-            matrix_name_list += [[country,name]]
+            matrix_name_list += [[nr_of_countries,name]]
 random.shuffle(matrix_name_list)
 
 #dumping matrix_name_list as pickle file:
-with open("matrix_name_list.pickle",'wb') as o:
+with open("datasets/matrix_name_list_4000.pickle",'wb') as o:
     pickle.dump(matrix_name_list,o,pickle.HIGHEST_PROTOCOL)
 
 names_countries_used = []
