@@ -27,10 +27,12 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         """
 
         int_representation -= 1
-        #one_hot_target = np.zeros((self.class_amount))
-        #one_hot_target[int_representation] = 1
 
-        #return one_hot_target
+        # uncomment following to one-hot encode the targets (not in usage because of the NLLoss)
+        # one_hot_target = np.zeros((self.class_amount))
+        # one_hot_target[int_representation] = 1
+        # return one_hot_target
+
         return [int_representation]
 
     def __getitem__(self, idx: int) -> torch.Tensor:
@@ -49,4 +51,6 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         return torch.Tensor(sample), torch.Tensor(target).type(torch.LongTensor), non_padded_sample
 
     def __len__(self):
+        """ returns length of dataset """
+        
         return len(self.dataset)

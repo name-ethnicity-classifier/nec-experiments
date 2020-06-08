@@ -12,7 +12,7 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
 from nameEthnicityDataset import NameEthnicityDataset
 from model import Model
-from utils import create_dataloader, validate_accuracy, show_progress, onehot_to_char
+from utils import create_dataloader, validate_accuracy, show_progress, onehot_to_string, init_xavier_weights, plot
 
 
 torch.manual_seed(0)
@@ -61,10 +61,13 @@ class Run:
 
         if continue_:
             model.load_state_dict(torch.load(self.model_file))
+        # else:
+        #    model.apply(init_xavier_weights)
 
         criterion = nn.NLLLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
 
+        total_train_targets, total_train_predictions = [], []
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
         for epoch in range(1, (self.epochs + 1)):
 
@@ -80,23 +83,37 @@ class Run:
                 loss.backward()
                 optimizer.step()
 
+                # log train loss
                 epoch_train_loss.append(loss.item())
+                
+                # log targets and prediction of every iteration to compute the accuracy later
+                #validated_predictions = model.eval()(names, len(names[0]), len(names))
+                validated_predictions = predictions
+                for i in range(validated_predictions.size()[0]): total_train_targets.append(targets[i].cpu().detach().numpy()); \
+                                                        total_train_predictions.append(validated_predictions[i].cpu().detach().numpy())
 
+            # decay learning rate (if wanted, uncomment)
             """if epoch % 3 == 0:
                 self.lr = self.lr / 2"""
-        
+
+            # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
-            _, epoch_train_accuracy = self._validate(model, self.train_set)
+            epoch_train_accuracy = validate_accuracy(total_train_targets, total_train_predictions, threshold=self.threshold)
+
+            # calculate validation loss and accuracy of last epoch
             epoch_val_loss, epoch_val_accuracy = self._validate(model, self.validation_set)
 
+            # log training stats
             train_loss_history.append(epoch_train_loss); train_accuracy_history.append(epoch_train_accuracy)
             val_loss_history.append(epoch_val_loss); val_accuracy_history.append(epoch_val_accuracy)
 
+            # print training stats in pretty format
             show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy)
 
+            # save checkpoint of model
             torch.save(model.state_dict(), self.model_file)
 
-        # TODO add history plot
+        plot(train_accuracy_history, train_loss_history, val_accuracy_history, val_loss_history)
 
     def test(self):
         model = Model().cuda()
@@ -104,14 +121,14 @@ class Run:
 
         _, accuracy = self._validate(model, self.test_set)
 
-        for names, targets, non_padded_names in tqdm(self.train_set, desc="epoch", ncols=150):
+        for names, targets, non_padded_names in tqdm(self.test_set, desc="epoch", ncols=150):
             names, targets = names.cuda(), targets.cuda()
 
             predictions = model.eval()(names, len(names[0]), len(names))
             
             predictions, targets, names = predictions.cpu().detach().numpy(), targets.cpu().detach().numpy(), names.cpu().detach().numpy()
 
-            for idx in range(63):
+            for idx in range(len(names)):
                 name, prediction, target, non_padded_name = names[idx], predictions[idx], targets[idx], non_padded_names[idx]
 
                 # convert to one-hot target
@@ -133,21 +150,26 @@ class Run:
                 predicted_class = list(classes.keys())[list(classes.values()).index(predicted_class)]
 
                 print("\n______________\n")
-                print("name:", onehot_to_char(non_padded_name))
+                print("name:", onehot_to_string(non_padded_name))
                 print("predicted as:", predicted_class)
                 print("actual target:", target_class)
-
-            break
 
         print("\ntest accuracy:", accuracy)
 
 
-run = Run(model_file="models/model1.pt", 
+run = Run(model_file="models/model4.pt", 
             dataset_path="datasets/matrix_name_list.pickle",
             epochs=100,
-            lr=0.000075,
+            lr=0.0001,
             batch_size=64,
             threshold=0.5)
 
 # run.train(continue_=True)
 run.test()
+
+
+# model1: rnn, relu
+# model2: rnn, relu
+# model3: gru, sigmoid
+# model4: rnn, tanh, 4l
+# model5: rnn, tanh

@@ -7,9 +7,11 @@ import torch
 import torch.utils.data
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
-
 import pickle
 from termcolor import colored
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+import pandas as pd
 
 from nameEthnicityDataset import NameEthnicityDataset
 
@@ -178,4 +180,41 @@ def string_to_onehot(string_name: str="") -> list:
         full_name_onehot.append(one_hot_char)
     
     return full_name_onehot
+
+
+def init_xavier_weights(m):
+    """ initializes model parameters with xavier-initialization
+
+    :param m: model parameters
+    """
+    if isinstance(m, nn.RNN):
+        nn.init.xavier_uniform_(m.weight_hh_l0.data)
+
+
+def plot(train_acc: list, train_loss: list, val_acc: list, val_loss: list, save_to: str=""):
+    """ plots training stats
+    
+    :param list train_acc/train_loss: training accuracy and loss
+    :param list val_acc/val_loss: validation accuracy and loss
+    """
+
+    plt.style.use("ggplot")
+    fig, axs = plt.subplots(2)
+    xs = range(1, (len(train_acc) + 1))
+
+    axs[0].plot(xs, train_acc, "r", label="train-acc")
+    axs[0].plot(xs, val_acc, "b", label="val-acc")
+    axs[0].legend()
+    axs[0].set_title("train-/ val-acc")
+
+    axs[1].plot(xs, train_loss, "r", label="train-loss")
+    axs[1].plot(xs, val_loss, "b", label="val-loss")
+    axs[1].legend()
+    axs[1].set_title("train-/ val-loss")
+    
+    if save_to is not "":
+        plt.savefig(save_to)
+
+    plt.show()
+
 

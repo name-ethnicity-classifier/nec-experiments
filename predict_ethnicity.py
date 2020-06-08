@@ -10,7 +10,7 @@ from model import Model
 from utils import onehot_to_string, string_to_onehot
 
 
-# get name from console argument parser (ie: python deploy.py -n "franziska hafner")
+# get name from console argument parser (ie: python predict_ethnicity.py -n "franziska hafner")
 parser = argparse.ArgumentParser()
 parser.add_argument("-n", "--name", required=True, help="Parse name to predict its ethnicity.")
 name = vars(parser.parse_args())["name"]
@@ -55,7 +55,7 @@ def predict(input_tensor, model_path: str="", classes: dict={}) -> str:
 
 classes = {'british': 0, 'indian': 1, 'hungarian': 2, 'irish': 3, 'canadian': 4, 'spanish': 5, 'american': 6, 'german': 7, 'zimbabwean': 8, 'portugese': 9, 'polish': 10, 'bulgarian': 11, 'bangladeshi': 12, 'malaysian': 13, 'turkish': 14, 'belgian': 15, 'pakistani': 16, 'italian': 17, 'romanian': 18, 'new zealander': 19, 'lithuanian': 20, 'french': 21, 'australian': 22, 'chinese': 23, 'swedish': 24, 'czech': 25, 'nigerian': 26, 'greek': 27, 'south african': 28, 'dutch': 29, 'sri lankan': 30, 'ukrainian': 31, 'swiss': 32, 'danish': 33, 'ghanian': 34, 'slovak': 35, 'russian': 36, 'austrian': 37, 'latvian': 38, 'brazilian': 39, 'filipino': 40, 'jamaican': 41}
 preprocessed_name = preprocess_name()
-ethnicity = predict(preprocessed_name, model_path="models/model1.pt", classes=classes)
+ethnicity = predict(preprocessed_name, model_path="models/model4.pt", classes=classes)
 
 print("\nname:", name, "- predicted ethnicity:", ethnicity)
 
