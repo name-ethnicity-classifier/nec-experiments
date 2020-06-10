@@ -4,6 +4,7 @@ from tqdm import tqdm
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import json
 
 import torch
 import torch.utils.data
@@ -18,8 +19,8 @@ from utils import create_dataloader, validate_accuracy, show_progress, onehot_to
 torch.manual_seed(0)
 
 
-classes = {'british': 0, 'indian': 1, 'hungarian': 2, 'irish': 3, 'canadian': 4, 'spanish': 5, 'american': 6, 'german': 7, 'zimbabwean': 8, 'portugese': 9, 'polish': 10, 'bulgarian': 11, 'bangladeshi': 12, 'malaysian': 13, 'turkish': 14, 'belgian': 15, 'pakistani': 16, 'italian': 17, 'romanian': 18, 'new zealander': 19, 'lithuanian': 20, 'french': 21, 'australian': 22, 'chinese': 23, 'swedish': 24, 'czech': 25, 'nigerian': 26, 'greek': 27, 'south african': 28, 'dutch': 29, 'sri lankan': 30, 'ukrainian': 31, 'swiss': 32, 'danish': 33, 'ghanian': 34, 'slovak': 35, 'russian': 36, 'austrian': 37, 'latvian': 38, 'brazilian': 39, 'filipino': 40, 'jamaican': 41}
-
+with open("datasets/nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+total_classes = len(classes)
 
 
 class Run:
@@ -67,10 +68,11 @@ class Run:
         criterion = nn.NLLLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
 
-        total_train_targets, total_train_predictions = [], []
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
         for epoch in range(1, (self.epochs + 1)):
 
+            
+            total_train_targets, total_train_predictions = [], []
             epoch_train_loss = []
             for names, targets, _ in tqdm(self.train_set, desc="epoch", ncols=150):
                 optimizer.zero_grad()
@@ -157,14 +159,14 @@ class Run:
         print("\ntest accuracy:", accuracy)
 
 
-run = Run(model_file="models/model4.pt", 
-            dataset_path="datasets/matrix_name_list.pickle",
+run = Run(model_file="models/model5.pt", 
+            dataset_path="datasets/matrix_name_list_4000.pickle",
             epochs=100,
             lr=0.0001,
-            batch_size=64,
+            batch_size=128,
             threshold=0.5)
 
-# run.train(continue_=True)
+run.train(continue_=False)
 run.test()
 
 

@@ -1,6 +1,7 @@
 import pickle
 import random
-
+import os
+import json
 #the higher the variable number_of_names_per_country, the less nationalities are represented in the output matrix and the more names are given per nationality
 
 #recommended number_of_names_per_country:
@@ -137,12 +138,19 @@ random.shuffle(matrix_name_list)
 with open("datasets/matrix_name_list_4000.pickle",'wb') as o:
     pickle.dump(matrix_name_list,o,pickle.HIGHEST_PROTOCOL)
 
-names_countries_used = []
-for element in list_countries_used:
-    for key in nationality_to_number_dict:
-        if element == nationality_to_number_dict[key]:
-            names_countries_used += [key + " " + str(nationality_to_number_dict[key])]
+names_countries_used = {}
+for i, element in enumerate(list_countries_used):
+    #for key in nationality_to_number_dict:
+        #if element == nationality_to_number_dict[key]:
+            #names_countries_used += [key + " " + str(nationality_to_number_dict[key])]
+    country_name = list(nationality_to_number_dict.keys())[list(nationality_to_number_dict.values()).index(element)]
+    names_countries_used[country_name] = i
+
 print(names_countries_used)
+
+filepath = os.getcwd()+"/datasets/nationality_to_number_dict.json"
+with open(filepath, 'w') as f:
+    json.dump(names_countries_used, f)
 
 #code to extract matrix name list from file again:
 #with open("matrix_name_list.pickle",'rb') as o:
