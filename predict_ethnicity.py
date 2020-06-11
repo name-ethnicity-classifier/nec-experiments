@@ -41,7 +41,7 @@ def predict(input_tensor, model_path: str="", classes: dict={}) -> str:
     """
 
     # prepare model
-    model = Model().cuda()
+    model = Model().to(device=device)
     model.load_state_dict(torch.load(model_path))
     model = model.eval()
 

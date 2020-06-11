@@ -17,6 +17,8 @@ from nameEthnicityDataset import NameEthnicityDataset
 
 torch.manual_seed(0)
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
 def custom_collate(batch):
     """ adds custom dataloader feature: batch padding for the sample-batch (the batch containing the one-hot-enc. names)
@@ -53,7 +55,7 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     :return torch.Dataloader: train-, test- and val-dataloader
     """
 
-    dataset = NameEthnicityDataset(root_dir=dataset_path, class_amount=42)
+    dataset = NameEthnicityDataset(root_dir=dataset_path, class_amount=33)
 
     test_amount, val_amount = int(dataset.__len__() * test_size), int(dataset.__len__() * val_size)
 
@@ -216,5 +218,4 @@ def plot(train_acc: list, train_loss: list, val_acc: list, val_loss: list, save_
         plt.savefig(save_to)
 
     plt.show()
-
 
