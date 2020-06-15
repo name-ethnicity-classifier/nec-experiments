@@ -12,12 +12,14 @@ from termcolor import colored
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import pandas as pd
+import time
 
 from nameEthnicityDataset import NameEthnicityDataset
 
 torch.manual_seed(0)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 
 
 def custom_collate(batch):
@@ -29,22 +31,22 @@ def custom_collate(batch):
 
     batch_size = len(batch)
 
-    sample_batch, target_batch, sequence_lengths, non_padded_batch = [], [], [], []
+    sample_batch, target_batch, non_padded_batch = [], [], []
     for sample, target, non_padded_sample in batch:
-        sequence_lengths.append(sample.size(1))
 
-        sample_batch.append(sample)
-        target_batch.append(target)
-        # non_padded_batch is the original batch, which is not getting padded so it can be converted back to string
-        non_padded_batch.append(non_padded_sample)
-        
+        if len(list(sample.size())) == 2:
+            sample_batch.append(sample)
+            target_batch.append(target)
+
+            # non_padded_batch is the original batch, which is not getting padded so it can be converted back to string
+            non_padded_batch.append(non_padded_sample)
+
     padded_batch = pad_sequence(sample_batch, batch_first=True)
+
     padded_to = list(padded_batch.size())[1]
+    padded_batch = padded_batch.reshape(len(sample_batch), padded_to, 28)        
 
-    padded_batch = padded_batch.reshape(batch_size, padded_to, 28)        
-    # packed_batch = pack_padded_sequence(padded_batch, sequence_lengths, batch_first=True, enforce_sorted=False)
-
-    return padded_batch, torch.cat(target_batch, dim=0).reshape(batch_size, 1), non_padded_batch
+    return padded_batch, torch.cat(target_batch, dim=0).reshape(len(sample_batch), 1), non_padded_batch
 
 def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: float=0.01, batch_size: int=32):
     """ create three dataloader (train, test, validation)
