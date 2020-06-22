@@ -46,9 +46,9 @@ def custom_collate(batch):
     padded_to = list(padded_batch.size())[1]
     padded_batch = padded_batch.reshape(len(sample_batch), padded_to, 28)        
 
-    return padded_batch, torch.cat(target_batch, dim=0).reshape(len(sample_batch), 1), non_padded_batch
+    return padded_batch, torch.cat(target_batch, dim=0).reshape(len(sample_batch), target_batch[0].size(0)), non_padded_batch
 
-def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: float=0.01, batch_size: int=32):
+def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: float=0.01, batch_size: int=32, class_amount: int=10):
     """ create three dataloader (train, test, validation)
 
     :param str dataset_path: path to dataset
@@ -57,7 +57,7 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     :return torch.Dataloader: train-, test- and val-dataloader
     """
 
-    dataset = NameEthnicityDataset(root_dir=dataset_path, class_amount=33)
+    dataset = NameEthnicityDataset(root_dir=dataset_path, class_amount=class_amount)
 
     test_amount, val_amount = int(dataset.__len__() * test_size), int(dataset.__len__() * val_size)
 
@@ -116,6 +116,9 @@ def validate_accuracy(y_true, y_pred, threshold: float) -> float:
         output_empty = np.zeros((amount_classes))
         output_empty[output] = 1
         output = output_empty
+
+        # output = list(np.exp(output))
+        # output = [1 if e >= threshold else 0 for e in output]
 
         if list(target) == list(output):
             correct_in_batch += 1
@@ -216,8 +219,9 @@ def plot(train_acc: list, train_loss: list, val_acc: list, val_loss: list, save_
     axs[1].legend()
     axs[1].set_title("train-/ val-loss")
     
-    if save_to is not "":
+    if save_to != "":
         plt.savefig(save_to)
 
     plt.show()
+
 
