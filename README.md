@@ -5,18 +5,15 @@
 ## | the 10 ethnicities (this can change):
 ```json
 {
-    "british": 0, "else": 1, "indian": 2, "irish": 3, "american": 4,
-    "german": 5, "polish": 6, "italian": 7, "romanian": 8, "french": 9,
-    "chinese": 10
+    "british": 0, "else": 1, "indian": 2, "american": 3, "german": 4, 
+    "polish": 5, "pakistani": 6, "italian": 7, "romanian": 8, "french": 9, "chinese": 10
 }
 ```
 
 ## | installation:
 ```bash
 git clone https://github.com/hollowcodes/name-ethnicity-classification.git
-
 cd name-ethnicity-classification/
-
 pip install -r requirements.txt
 ```
 
@@ -46,7 +43,7 @@ pip install -r requirements.txt
 
 ## | results:
 
- - ### highest archived accuracy: 79.488%
+ - ### highest archived accuracy: 78.97%
  - ### confusion matrix:
 <p align="center"> 
 <img src="readme_images/confusion_matrix.png">
