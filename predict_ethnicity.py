@@ -75,7 +75,7 @@ def preprocess_names(names: list=[str]) -> torch.tensor:
         alphabet = list(string.ascii_lowercase.strip()) + [" ", "-"]
         int_name = []
         for char in name:
-            int_name.append(alphabet.index(char) + 1)
+            int_name.append(alphabet.index(char.lower()) + 1)
         
         name = torch.tensor(int_name)
         sample_batch.append(name)
@@ -97,9 +97,9 @@ def predict(input_batch, model_path: str="", classes: dict={}) -> str:
     """
 
     # prepare model
-    model = Model(class_amount=len(classes), hidden_size=128, layers=2, embedding_size=128).to(device=device)
+    model = Model(class_amount=len(classes), hidden_size=256, layers=2, embedding_size=128).to(device=device)
     model.load_state_dict(torch.load(model_path))
-    model = model.eval()
+    model = model.eval() 
 
     # predict and convert to country name
     predictions = model(input_batch.float(), len(input_batch[0]), len(names))
@@ -119,13 +119,13 @@ if __name__ == "__main__":
     names, csv_out_path = console_parser()
 
     # get dictionary of classes
-    with open("src/datasets/more_nationality_to_number_dict.json", "r") as f: classes = json.load(f)
+    with open("src/datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f)
 
     # preprocess inputs
     input_batch = preprocess_names(names=names)
     
     # predict ethnicities
-    ethnicities = predict(input_batch, model_path="src/models/model6.pt", classes=classes)
+    ethnicities = predict(input_batch, model_path="src/models/model1.pt", classes=classes)
 
     # check if the -c/--csv flag was set, by checking if there is a csv-save-file, if so: save names with their ethnicities
     if len(csv_out_path) > 0:
