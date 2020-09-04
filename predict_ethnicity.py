@@ -96,10 +96,14 @@ def predict(input_batch, model_path: str="", classes: dict={}) -> str:
     :return str: predicted ethnicities
     """
 
-    # prepare model
+    # prepare model (map model-file content from gpu to cpu if necessary)
     model = Model(class_amount=len(classes), hidden_size=256, layers=2, embedding_size=128).to(device=device)
-    model.load_state_dict(torch.load(model_path))
-    model = model.eval() 
+    if device != "cuda:0":
+        model.load_state_dict(torch.load(model_path, map_location={'cuda:0': 'cpu'}))
+    else:
+        model.load_state_dict(torch.load(model_path))
+
+    model = model.eval()
 
     # predict and convert to country name
     predictions = model(input_batch.float(), len(input_batch[0]), len(names))
