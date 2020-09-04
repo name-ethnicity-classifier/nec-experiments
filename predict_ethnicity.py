@@ -83,7 +83,7 @@ def preprocess_names(names: list=[str]) -> torch.tensor:
     padded_batch = pad_sequence(sample_batch, batch_first=True)
 
     padded_to = list(padded_batch.size())[1]
-    padded_batch = padded_batch.reshape(len(sample_batch), padded_to, 1)
+    padded_batch = padded_batch.reshape(len(sample_batch), padded_to, 1).to(device=device)
 
     return padded_batch
 
@@ -116,7 +116,7 @@ def predict(input_batch, model_path: str="", classes: dict={}) -> str:
         predicted_ethnicites.append(ethnicity)
 
     return predicted_ethnicites
-
+    
 
 if __name__ == "__main__":
     # get names from console arguments

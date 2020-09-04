@@ -27,7 +27,7 @@ pip install -r requirements.txt
 
  - ### predicting multiple names and save the output
     ```
-    python3 predict_ethnicitiy.py -c "names.csv" "predictions.csv"
+    python3 predict_ethnicity.py -c "names.csv" "predictions.csv"
     ```
 
     Using the ```-c/--csv``` flag, you can predict an entire lists of names (names.csv, changeable) simutaneously and save them to another csv (predictions.csv, changeable).
@@ -48,6 +48,7 @@ pip install -r requirements.txt
 <p align="center"> 
 <img src="readme_images/confusion_matrix.png">
 </p>
+
  - ### loss-/ accuracy-curve:
 <p align="center"> 
 <img src="readme_images/history.png">

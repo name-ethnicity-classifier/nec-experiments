@@ -37,7 +37,7 @@ class Model(nn.Module):
         else:
             hidden = torch.zeros(self.layers, batch_size, self.hidden_size).to(device=device)
         
-        out = self.embed(x.type(torch.cuda.LongTensor))
+        out = self.embed(x.type(torch.LongTensor).to(device=device))
 
         out = out.reshape(batch_size, pad_size, self.embedding_size)
 
