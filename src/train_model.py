@@ -21,7 +21,7 @@ import xman
 torch.manual_seed(0)
 
 
-with open("datasets/more_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+with open("datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
 total_classes = len(classes)
 
 
@@ -44,7 +44,7 @@ class Run:
 
         self.continue_ = continue_
 
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment5", new=False, continue_=self.continue_)
+        self.xmanager = xman.ExperimentManager(experiment_name="experiment6", new=False, continue_=self.continue_)
         self.xmanager.init(optimizer="Adam", 
                             loss_function="NLLLoss",
                             epochs=self.epochs, 
@@ -55,7 +55,7 @@ class Run:
                                 "hidden-size": self.hidden_size,
                                 "layers": self.layers,
                                 "dropout-chance": self.dropout_chance,
-                                "embedding-size": 128,
+                                "embedding-size": self.embedding_size,
                                 "dense-layer-1": "tanh",
                                 "dense-layer-2": "logsoftmax",
                             })
@@ -90,7 +90,7 @@ class Run:
         return loss, accuracy
 
     def train(self):
-        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance).to(device=device)
+        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, embedding_size=self.embedding_size).to(device=device)
         if self.continue_:
             model.load_state_dict(torch.load(self.model_file))
 
@@ -193,18 +193,18 @@ class Run:
         print("\ntest accuracy:", accuracy)
 
 
-run = Run(model_file="models/model6.pt",
-            dataset_path="datasets/more_matrix_name_list.pickle",
+run = Run(model_file="models/model1.pt",
+            dataset_path="datasets/final_matrix_name_list.pickle",
             epochs=5,
             # hyperparameters
             lr=0.001,
             batch_size=512,
             threshold=0.4,
-            hidden_size=128,
+            hidden_size=256,
             layers=2,
             dropout_chance=0.65,
             embedding_size=128,
             continue_=True)
 
-#run.train()
+# run.train()
 run.test()
