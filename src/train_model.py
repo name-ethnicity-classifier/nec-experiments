@@ -197,7 +197,7 @@ run = Run(model_file="models/model1.pt",
             dataset_path="datasets/final_matrix_name_list.pickle",
             epochs=5,
             # hyperparameters
-            lr=0.001,
+            lr=0.0001,
             batch_size=512,
             threshold=0.4,
             hidden_size=256,
@@ -206,5 +206,5 @@ run = Run(model_file="models/model1.pt",
             embedding_size=128,
             continue_=True)
 
-# run.train()
+#run.train()
 run.test()

@@ -43,7 +43,7 @@ pip install -r requirements.txt
 
 ## | results:
 
- - ### highest archived accuracy: 78.97%
+ - ### highest archived accuracy: 79.2%
  - ### confusion matrix:
 <p align="center"> 
 <img src="readme_images/confusion_matrix.png">
