@@ -42,7 +42,7 @@ pip install -r requirements.txt
     After running the command, the "predictions.csv" will look like this:
     ```csv
     1 names,ethnicities
-    2 John Doe,amcerican
+    2 John Doe,american
     3 Max Mustermann,german
     ```
 
