@@ -2,7 +2,7 @@
 
 ## this project uses a LSTM to assign ethnicities to names
 
-## | the 10 ethnicities (this can change):
+## | currently distinguishes between these 10 countries:
 ```json
 {
     "british": 0, "else": 1, "indian": 2, "american": 3, "german": 4, 
@@ -30,7 +30,7 @@ pip install -r requirements.txt
     python3 predict_ethnicity.py -c "names.csv" "predictions.csv"
     ```
 
-    Using the ```-c/--csv``` flag, you can predict an entire lists of names (names.csv, changeable) simutaneously and save them to another csv (predictions.csv, changeable).
+    Using the ```-c/--csv``` flag, you can predict an entire lists of names (in ```names.csv```, file name changeable) simutaneously and save them to another csv (```predictions.csv```, file name changeable).
 
     "names.csv" has to have one column named "names", ie.:
     ```csv
@@ -39,7 +39,16 @@ pip install -r requirements.txt
     3 Max Mustermann
     ```
 
-    If "predictions.csv" doesn't exist, it will be created.
+    After running the command, the "predictions.csv" will look like this:
+    ```csv
+    1 names,ethnicities
+    2 John Doe,amcerican
+    3 Max Mustermann,german
+    ```
+
+    If the output file doesn't exist, it will be created.
+
+
 
 ## | results:
 
