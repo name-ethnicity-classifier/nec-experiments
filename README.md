@@ -82,7 +82,7 @@ Additional to that, always when they are two different nationalities, the loss i
 ## - result:
 
 <p align="center"> 
-<img src="src/contrastive-name-clustering/rotation.gif">
+<img src="readme_images/rotation2.gif">
 </p>
 
 
