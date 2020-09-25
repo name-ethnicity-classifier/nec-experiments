@@ -65,21 +65,21 @@ pip install -r requirements.txt
 
 
 ## | contrastive name clustering:
-Additional to the classification, we clustered the names in 3d space.
+Additional to the classification, we [clustered the names in 3d space](src/contrastive-name-clustering/).
 
 ### - method:
-For that we ignored the last classification layer and gathered the output-embeddings of the prior layer (dim: 32, 1) instead.
-Those were fed into another simpler "coordinate-model" which outputs three values: x, y, z (3d coordinates).
+For that we ignored the last classification layer and [gathered the output-embeddings](src/contrastive-name-clustering/gather_embeddings.py) of the prior layer (dim: 32, 1) instead.
+Those were fed into another simpler ["coordinate-model"](src/contrastive-name-clustering/coord_model.py) which outputs three values: x, y, z (3d coordinates).
 
 ### - loss:
-The loss is a custom contrastive-cosine-similarity loss. After each batch ```B```, which was fed into the coordinate-model, a target batch ```B'``` is created, which is just ```B``` but flipped by 180 degrees. With that, another vector ```y``` is created: For each index ```i```, this vector holds either ```0``` or ```1```.
+The loss is a custom [contrastive-cosine-similarity loss](src/contrastive-name-clustering/contrastive_loss.py). After each batch ```B```, which was fed into the coordinate-model, a target batch ```B'``` is created, which is just ```B``` but flipped by 180 degrees. With that, another vector ```y``` is created: For each index ```i```, this vector holds either ```0``` or ```1```.
 ```y_i``` is ```0```, when the original batch ```B``` and ```B'``` have a sample of the same target/nationality at index ```i```, and ```1``` if they are from different nationalities. ```B_i``` and ```B'_i``` are considered "partner-coordinates".
 
 The loss then caluclates the cosine-similarity (cos-angle between two matrices). When two coordinates aren't from the same nationality, we subtract it from ```1```, to get the inverted value. Otherwise it would represent the difference.
 
 Additional to that, always when they are two different nationalities, the loss is multiplied by a value beta ```]0;1[```, which reduces the weight of that loss. We do that because when flipping the batch ```B```, the chance that the partner coordinates are from the same nationality is ```10%```, since there are 10 different nationalities. So there should be more weight for same-nationality coordinates, because there are far less of them.
 
-## - result:
+### - result:
 
 <p align="center"> 
 <img src="readme_images/rotation2.gif">
