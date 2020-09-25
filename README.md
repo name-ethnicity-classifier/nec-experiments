@@ -65,18 +65,20 @@ pip install -r requirements.txt
 
 
 ## | contrastive name clustering:
-Additional to the classification, we [clustered the names in 3d space](src/contrastive-name-clustering/).
+Additional to the classification, names are [clustered in 3d space](src/contrastive-name-clustering/).
 
 ### - method:
-For that we ignored the last classification layer and [gathered the output-embeddings](src/contrastive-name-clustering/gather_embeddings.py) of the prior layer (dim: 32, 1) instead.
-Those were fed into another simpler ["coordinate-model"](src/contrastive-name-clustering/coord_model.py) which outputs three values: x, y, z (3d coordinates).
+To archieve that, the last classification layer is being ignored and the output-embeddings of the prior layer (dim: 32, 1) get saved.
+Those will be fed into another simpler ["coordinate-model"](src/contrastive-name-clustering/coord_model.py) which outputs three values: x, y, z (3d coordinates).
 
 <p align="center"> 
 <img src="readme_images/clustering.png">
 </p>
 
 ### - loss:
-The loss is a custom [contrastive-cosine-similarity loss](src/contrastive-name-clustering/contrastive_loss.py). After a batch ```B``` was fed into the coordinate-model, a target batch ```B'``` is created, which is just ```B``` but flipped by 180 degrees.
+The loss is a custom [contrastive-cosine-similarity loss](src/contrastive-name-clustering/contrastive_loss.py):
+
+After a batch ```B``` passes through the coordinate-model, a target batch ```B'``` is created, which is just ```B``` but flipped by 180 degrees.
 
                             x1 = B ; x2 = flip(B, 2)
 
@@ -88,7 +90,7 @@ The loss then caluclates the cosine-similarity (cos-angle between two matrices).
                                     y = {0; 1}
                         similarity = |-y + cossim(x1, x2)|
 
-Additional to that, always when ```B_i``` and ```B'_i``` are two different nationalities, the loss is multiplied by a value beta ```]0;1[```, which reduces the weight of that loss. We do that because when flipping the batch ```B```, the chance that the partner coordinates are from the same nationality is ```10%```, since there are 10 different nationalities. So there should be more weight for same-nationality coordinates, because there are far less of them.
+Additional to that, if ```B_i``` and ```B'_i``` are two different nationalities, the loss is multiplied by a value ```beta ]0;1[```, which reduces the weight of that loss. The reason: When flipping the batch ```B```, the chance that the partner coordinates are from the same nationality is ```10%```, since there are 10 different nationalities. So there should be more weight for same-nationality coordinates, because there are far less of them.
 
                     similarity = (y * beta) * |-y + cossim(x1, x2)|
 
