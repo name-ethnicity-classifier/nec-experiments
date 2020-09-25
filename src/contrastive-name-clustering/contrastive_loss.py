@@ -14,7 +14,7 @@ class ContrastiveCosineLoss(nn.Module):
 
     def forward(self, x1: torch.tensor, x2: torch.tensor, y: torch.tensor, size_average: bool=True):
         cos_sim = nn.CosineSimilarity(dim=1, eps=self.eps)
-        loss = (y * self.beta) * torch.abs(- (y * 1) + cos_sim(x1, x2))
+        loss = (y * self.beta) * torch.abs(-y + cos_sim(x1, x2))
 
         if size_average:
             return loss.mean()
