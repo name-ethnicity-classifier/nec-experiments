@@ -65,34 +65,35 @@ pip install -r requirements.txt
 
 
 ## | contrastive name clustering:
-Additional to the classification, names are [clustered in 3d space](src/contrastive-name-clustering/).
+In order to visually observe structural differences and similarities between names, they are [clustered in 3d space](src/contrastive-name-clustering/) using the following methology. 
 
 ### - method:
-To archieve that, the last classification layer is being ignored and the output-embeddings of the prior layer (dim: 32, 1) get saved.
-Those will be fed into another simpler ["coordinate-model"](src/contrastive-name-clustering/coord_model.py) which outputs three values: x, y, z (3d coordinates).
+The last classification layer of the already trained LSTM model is being ignored and the output-embeddings of the prior layer (dim: 32, 1) get saved.
+Those will be fed as new training data into another simpler [dense-model](src/contrastive-name-clustering/coord_model.py), which predicts the corresponding x, y and z values used for plotting in 3d space.
 
 <p align="center"> 
 <img src="readme_images/clustering.png">
 </p>
 
 ### - loss:
-The loss is a custom [contrastive-cosine-similarity loss](src/contrastive-name-clustering/contrastive_loss.py):
+For the error calculation a custom [contrastive-cosine-similarity loss](src/contrastive-name-clustering/contrastive_loss.py) is used:
 
-After a batch ```B``` passes through the coordinate-model, a target batch ```B'``` is created, which is just ```B``` but flipped by 180 degrees.
+After a batch of embeddings is passed through the model, the output batch $B$ holds $|B|$ different predicted coordinates.
 
-                            x1 = B ; x2 = flip(B, 2)
+To create a target for the loss function, a batch $B'$ is created by flipping $B$ by 180 degrees. It now holds the same coordinates but in reverse order. The loss/similarity will be calculated by taking the mean of the cosine-similarities (cosine-angle) between each pair $B_i$ and $B'_i$.
 
-Additional to that, another vector ```y``` is created: For each index ```i```, this vector holds either ```0``` or ```1```.
-```y_i``` is ```0```, when the original batch ```B``` and ```B'``` have a sample of the same target/nationality at index ```i```, and ```1``` if they are from different nationalities. ```B_i``` and ```B'_i``` are considered "partner-coordinates".
+Additionally a vector $y$ is created. For each index $i$, this vector holds either $0$ or $1$.
+$y_i$ is $0$, when the coordinates $B_i$ and $B'_i$ belong to the same nationality, and $1$ if they don't.
 
-The loss then caluclates the cosine-similarity (cos-angle between two matrices). When two coordinates aren't from the same nationality, we subtract it from ```1```, to get the inverted value. Otherwise it would represent the difference instead of the similarity.
-                                    
-                                    y = {0; 1}
-                        similarity = |-y + cossim(x1, x2)|
+$y = (y_1\; ...\; y_{|B|})\; ,\; y_i \in \{0; 1\}$
 
-Additional to that, if ```B_i``` and ```B'_i``` are two different nationalities, the loss is multiplied by a value ```beta ]0;1[```, which reduces the weight of that loss. The reason: When flipping the batch ```B```, the chance that the partner coordinates are from the same nationality is ```10%```, since there are 10 different nationalities. So there should be more weight for same-nationality coordinates, because there are far less of them.
+Then the cosine-similarity $s_i$ gets caluclated. When two coordinates at index $i$ don't belong to the same nationality, the inverted value of $s_i$ has to be used. To achieve that, it simply gets subtracted from $y_i$, which will be equal to $1$. Otherwise $s_i$ would represent the difference instead of the similarity.
 
-                    similarity = (y * beta) * |-y + cossim(x1, x2)|
+$s_i = \left| -y_i + \frac{B_i \cdot B'_i}{|B_i| \cdot |B'_i|}\right|$
+
+In addition to that, $s_i$ (loss at index $i$) is multiplied by a value $beta \in ]0;1[$, which reduces the weight of that loss. The reason: When flipping the batch $B$, the chance that $B_i$ and $B'_i$ belong the same nationality is $10\%$, since there are ten different nationalities. So there should be more weight for same-nationality coordinates, because there are far less of them. Finally, the mean of all similarities has to be calculated to get the loss $l$.
+
+$l = \frac{1}{|B|}\sum_{i=0}^{|B| - 1} y_i \cdot \beta \cdot \left| -y_i + \frac{B_i \cdot B'_i}{|B_i| \cdot |B'_i|}\right|$
 
 
 ### - result:
@@ -100,6 +101,3 @@ Additional to that, if ```B_i``` and ```B'_i``` are two different nationalities,
 <p align="center"> 
 <img src="readme_images/rotation2.gif">
 </p>
-
-
-
