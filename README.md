@@ -53,28 +53,37 @@ pip install -r requirements.txt
 ## | results:
 
  - ### highest archived accuracy: 79.2%
- - ### confusion matrix:
-<p align="center"> 
-<img src="readme_images/confusion_matrix.png">
-</p>
-
- - ### loss-/ accuracy-curve:
-<p align="center"> 
+ - ### loss-/ accuracy-curve and confusion matrix:
+<p align="center">
 <img src="readme_images/history.png">
+<img src="readme_images/confusion_matrix.png">
 </p>
 
 
 ## | cluster for visual interpretation
+The data from which the clusters are created are not directly the embeddings of the names, but instead the output-embeddings ```E```, which get produced by the LSTM layer of the classifier (the last two layers are being ignored). The goal is to get an insight into the feature-extraction process of the LSTM.
+(The colors represent the ground truth.)
 
-### method:
-The colors represent the ground truth.
-These clusters are created by passing the output-embeddings of the LSTM layer through a randomly initialzed, not trained model.
-This model consists of only one fully-connected sigmoid layer, which outputs a vector of shape (3, 1) and can be plotted in 3d space.
+### using random-transformation:
+To create clusters using this method, the output-embeddings ```E``` are each (matrix-) multiplied with the same random matrix ```R``` and (optionally) passed into the sigmoid function.
+Since the result ```C``` of this multiplication must be ```3 x 1```, so it can be plotted in 3d space, ```R``` must have the dimensions ```3 x N``` where ```N``` is the length of ```E```.
 
-The reason why this works is not clear. But it seems it's due to the very ordered feature-vector created by the LSTM.
 
 <p align="center"> 
-<img src="readme_images/rotation1.gif">
+<img src="readme_images/rand_trans.png">
+</p>
+
+#### result:
+<p align="center"> 
+<img src="readme_images/rt_rotation.gif">
+</p>
+
+### using principal-component-analysis:
+With PCA the high-dimensional outputs embeddings get projected into 3d space.
+
+#### result:
+<p align="center"> 
+<img src="readme_images/pca_rotation.gif">
 </p>
 
 ### conclusions:
@@ -91,4 +100,4 @@ The reason why this works is not clear. But it seems it's due to the very ordere
 
 - the three findings above are probably largely responsible for the reduction of accuracy of the model
 
-- nationalities with a very specific name-type (like chinese) have more dense clusters and are more distant from the middle
+- nationalities with a very specific name-type (like chinese) have more dense clusters and/or are more distant from the middle
