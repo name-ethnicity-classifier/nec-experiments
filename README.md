@@ -54,10 +54,9 @@ pip install -r requirements.txt
 
  - ### highest archived accuracy: 79.2%
  - ### loss-/ accuracy-curve and confusion matrix:
-<p align="center">
-<img src="readme_images/history.png">
-<img src="readme_images/confusion_matrix.png">
-</p>
+
+![history](readme_images/history.png) ![confusion_matrix](readme_images/confusion_matrix.png)
+
 
 
 ## | cluster for visual interpretation
