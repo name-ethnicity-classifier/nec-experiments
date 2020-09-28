@@ -66,6 +66,8 @@ pip install -r requirements.txt
 
 ## | cluster for visual interpretation
 
+### method:
+The colors represent the ground truth.
 These clusters are created by passing the output-embeddings of the LSTM layer through a randomly initialzed, not trained model.
 This model consists of only one fully-connected sigmoid layer, which outputs a vector of shape (3, 1) and can be plotted in 3d space.
 
@@ -74,3 +76,19 @@ The reason why this works is not clear. But it seems it's due to the very ordere
 <p align="center"> 
 <img src="readme_images/rotation1.gif">
 </p>
+
+### conclusions:
+- british and american names are very close to each other
+  
+    -> probable reason: they have the same language
+- british and american names are in the middle of the cluster formation
+  
+    -> probable reason: names of those two countries appear often in other countries
+
+- in every cluster, there are a few names which, according to the dataset, don't belong there (false positives/negatives)
+  
+    -> probable reason: such names belong to people whose ancestors or who themselfes have emigrated or taken another citizenship
+
+- the three findings above are probably largely responsible for the reduction of accuracy of the model
+
+- nationalities with a very specific name-type (like chinese) have more dense clusters and are more distant from the middle
