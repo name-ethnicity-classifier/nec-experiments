@@ -53,12 +53,18 @@ pip install -r requirements.txt
 ## | results:
 
  - ### highest archived accuracy: 79.2%
- - ### loss-/ accuracy-curve and confusion matrix:
+ - ### confusion matrix:
 
-![history](readme_images/history.png) ![confusion_matrix](readme_images/confusion_matrix.png)
+![confusion_matrix](readme_images/confusion_matrix.png)
 
+<details>
+<summary><b>loss-/ accuracy-curve</b></summary>
 
+![history](readme_images/history.png)
 
+</details>
+   
+    
 ## | cluster for visual interpretation
 The data from which the clusters are created are not directly the embeddings of the names, but instead the output-embeddings ```E```, which get produced by the LSTM layer of the classifier (the last two layers are being ignored). The goal is to get an insight into the feature-extraction process of the LSTM.
 (The colors represent the ground truth.)

@@ -44,7 +44,8 @@ class Run:
 
         self.continue_ = continue_
 
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment6", new=False, continue_=self.continue_)
+        # initialize experiment manager (comment if you don't have the xman libary installed)
+        self.xmanager = xman.ExperimentManager(experiment_name="experiment7", new=False, continue_=self.continue_)
         self.xmanager.init(optimizer="Adam", 
                             loss_function="NLLLoss",
                             epochs=self.epochs, 
@@ -138,10 +139,10 @@ class Run:
             # save checkpoint of model
             torch.save(model.state_dict(), self.model_file)
 
-            # log epoch results with xman
+            # log epoch results with xman (comment if you don't have the xman libary installed)
             self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)
 
-        # plot train-history with xman
+        # plot train-history with xman (comment if you don't have the xman libary installed)
         self.xmanager.plot_history(save=True)
 
     def test(self):
@@ -193,18 +194,18 @@ class Run:
         print("\ntest accuracy:", accuracy)
 
 
-run = Run(model_file="models/model1.pt",
+run = Run(model_file="models/model7.pt",
             dataset_path="datasets/final_matrix_name_list.pickle",
             epochs=5,
             # hyperparameters
             lr=0.0001,
-            batch_size=512,
+            batch_size=256,
             threshold=0.4,
             hidden_size=256,
             layers=2,
             dropout_chance=0.65,
             embedding_size=128,
-            continue_=True)
+            continue_=False)
 
-#run.train()
+# run.train()
 run.test()
