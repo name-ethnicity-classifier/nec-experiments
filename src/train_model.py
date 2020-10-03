@@ -44,22 +44,12 @@ class Run:
 
         self.continue_ = continue_
 
-        # initialize experiment manager (comment if you don't have the xman libary installed)
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment7", new=False, continue_=self.continue_)
-        self.xmanager.init(optimizer="Adam", 
-                            loss_function="NLLLoss",
-                            epochs=self.epochs, 
-                            learning_rate=self.lr, 
-                            batch_size=self.batch_size,
-                            custom_parameters={
-                                "lstm": 1,
-                                "hidden-size": self.hidden_size,
-                                "layers": self.layers,
-                                "dropout-chance": self.dropout_chance,
-                                "embedding-size": self.embedding_size,
-                                "dense-layer-1": "tanh",
-                                "dense-layer-2": "logsoftmax",
-                            })
+        # initialize experiment manager (uncomment if you have the xman libary installed)
+        # self.xmanager = xman.ExperimentManager(experiment_name="experiment7", new=True, continue_=self.continue_)
+        # self.xmanager.init(optimizer="Adam", 
+        #                     loss_function="NLLLoss", epochs=self.epochs, learning_rate=self.lr, batch_size=self.batch_size,
+        #                     custom_parameters={ "lstm": 1, "hidden-size": self.hidden_size, "layers": self.layers, "dropout-chance": self.dropout_chance,
+        #                     "embedding-size": self.embedding_size, "dense-layer-1": "tanh", "dense-layer-2": "logsoftmax"}) """
 
     def _validate(self, model, dataset, confusion_matrix: bool=False):
         validation_dataset = dataset
@@ -139,11 +129,11 @@ class Run:
             # save checkpoint of model
             torch.save(model.state_dict(), self.model_file)
 
-            # log epoch results with xman (comment if you don't have the xman libary installed)
-            self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)
+            # log epoch results with xman (uncomment if you have the xman libary installed)
+            # self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)
 
-        # plot train-history with xman (comment if you don't have the xman libary installed)
-        self.xmanager.plot_history(save=True)
+        # plot train-history with xman (uncomment if you have the xman libary installed)
+        # self.xmanager.plot_history(save=True)
 
     def test(self):
         model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, embedding_size=self.embedding_size).to(device=device)
