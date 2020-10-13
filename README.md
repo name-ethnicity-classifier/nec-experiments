@@ -52,7 +52,7 @@ pip install -r requirements.txt
 
 ## | results:
 
- - ### highest archived accuracy: 79.2%
+ - ### highest archived accuracy: 80.183%
  - ### confusion matrix:
 
 ![confusion_matrix](readme_images/confusion_matrix.png)
@@ -60,7 +60,7 @@ pip install -r requirements.txt
 <details>
 <summary><b>loss-/ accuracy-curve</b></summary>
 
-![history](readme_images/history.png)
+![history](readme_images/history2.png)
 
 </details>
    
