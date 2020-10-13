@@ -20,7 +20,6 @@ from src.utils import onehot_to_string, string_to_onehot, char_indices_to_string
 # check if nvidia GPU is available, if not, use CPU
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
 def console_parser() -> list:
     """ handles console arguments
 
@@ -123,13 +122,13 @@ if __name__ == "__main__":
     names, csv_out_path = console_parser()
 
     # get dictionary of classes
-    with open("src/datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f)
+    with open("src/datasets/preprocessed_datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f)
 
     # preprocess inputs
     input_batch = preprocess_names(names=names)
     
     # predict ethnicities
-    ethnicities = predict(input_batch, model_path="src/models/model1.pt", classes=classes)
+    ethnicities = predict(input_batch, model_path="src/models/model8.pt", classes=classes)
 
     # check if the -c/--csv flag was set, by checking if there is a csv-save-file, if so: save names with their ethnicities
     if len(csv_out_path) > 0:
