@@ -3,11 +3,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def validate_accuracy(y_true, y_pred, threshold: float) -> float:
-    """ calculate the accuracy of predictions
+def validate_accuracy(y_true: list, y_pred: list, threshold: float) -> float:
+    """ calculates the accuracy of predictions
     
-    :param torch.tensor y_true: targets
-    :param torch.tensor y_pred: predictions
+    :param list y_true: targets
+    :param list y_pred: predictions
     :param float threshold: treshold for logit-rounding
     :return float: accuracy
     """
@@ -16,28 +16,123 @@ def validate_accuracy(y_true, y_pred, threshold: float) -> float:
     for idx in range(len(y_true)):
         output, target = y_pred[idx], y_true[idx]
 
-        amount_classes = output.shape[0]
-
-        target_empty = np.zeros((amount_classes))
-        target_empty[target] = 1
-        target = target_empty
-
-        output = list(output).index(max(output))
-        output_empty = np.zeros((amount_classes))
-        output_empty[output] = 1
-        output = output_empty
-
-        # output = list(np.exp(output))
-        # output = [1 if e >= threshold else 0 for e in output]
-
-        if list(target) == list(output):
+        if target == output:
             correct_in_batch += 1
     
     return round((100 * correct_in_batch / len(y_true)), 5)
 
 
+def create_confusion_matrix(y_true: list, y_pred: list, classes: dict={}) -> None:
+    """ creates and plots a confusion matrix given two list (targets and predictions)
+
+    :param list y_true: list of all targets (as indices of one-hot enc. vector)
+    :param list y_pred: list of all predictions (as indices of one-hot enc. vector)
+    :param dict classes: a dictionary of the countries with they index representation
+    """
+
+    amount_classes = len(classes)
+
+    confusion_matrix = np.zeros((amount_classes, amount_classes))
+    for idx in range(len(y_true)):
+        target = y_true[idx]
+        output = y_pred[idx]
+
+        confusion_matrix[target][output] += 1
+
+    fig, ax = plt.subplots(1)
+
+    ax.matshow(confusion_matrix)
+    ax.set_xticks(np.arange(len(list(classes.keys()))))
+    ax.set_yticks(np.arange(len(list(classes.keys()))))
+
+    ax.set_xticklabels(list(classes.keys()))
+    ax.set_yticklabels(list(classes.keys()))
+
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
+    plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+    plt.show()
+
+
+def precision(y_true: list, y_pred: list, classes: int=10) -> list:
+    """ calculates recall scores of classes (against all other classes)
+
+    :param list y_true: list of all targets (as indices of one-hot enc. vector)
+    :param list y_pred: list of all predictions (as indices of one-hot enc. vector)
+    :param int classes: amount of classes
+    :return list: list of the precision scores of each class
+    """
+
+    total_prediction_of_classes, total_true_prediction_of_classes = [0 for i in range(classes)], [0 for i in range(classes)]
+    for i in range(len(y_true)):
+        output, target = y_pred[i], y_true[i]
+
+        for class_ in range(classes):
+            if output == class_:
+                total_prediction_of_classes[class_] += 1
+
+                if output == target:
+                    total_true_prediction_of_classes[class_] += 1
+
+    all_precisions = [0 for i in range(classes)]
+    for i in range(classes):
+        if total_prediction_of_classes[i] > 0:
+            all_precisions[i] = round((total_true_prediction_of_classes[i] / total_prediction_of_classes[i]), 5)
+        else:
+            all_precisions[i] = 0
+
+    return all_precisions
+
+
+def recall(y_true: list, y_pred: list, classes: int=10) -> list:
+    """ calculates recall scores of all classes (against all other classes)
+
+    :param list y_true: list of all targets (as indices of one-hot enc. vector)
+    :param list y_pred: list of all predictions (as indices of one-hot enc. vector)
+    :param int classes: amount of classes
+    :return list: list of the recall scores of each class
+    """
+
+    total_prediction_of_classes, total_true_of_classes = [0 for i in range(classes)], [0 for i in range(classes)]
+    for i in range(len(y_true)):
+        output, target = y_pred[i], y_true[i]
+
+        for class_ in range(classes):
+            if target == class_:
+                total_true_of_classes[class_] += 1
+
+                if output == class_:
+                    total_prediction_of_classes[class_] += 1
+
+    all_recalls = [0 for i in range(classes)]
+    for i in range(classes):
+        if total_true_of_classes[i] > 0:
+            all_recalls[i] = round((total_prediction_of_classes[i] / total_true_of_classes[i]), 5)
+        else:
+            all_recalls[i] = 0
+
+    return all_recalls
+
+
+def f1_score(precision_scores: list, recall_scores: list) -> list:
+    """ calculates F1 scores of all classes (against all other classes)
+
+    :param list precision_scores: list containing the precision of each class
+    :param list recall_scores: list containing the recall of each class
+    :return list: list of the F1 score of each class
+    """
+    f1_scores = []
+    for i in range(len(precision_scores)):
+        precision_score, recall_score = precision_scores[i], recall_scores[i]
+
+        f1_score = 2 * ((precision_score * recall_score) / (precision_score + recall_score))
+        f1_scores.append(f1_score)
+
+    return f1_scores
+
+
 def plot(train_acc: list, train_loss: list, val_acc: list, val_loss: list, save_to: str="") -> None:
-    """ plots training stats
+    """ plots training stats NOT IN USAGE
     
     :param list train_acc/train_loss: training accuracy and loss
     :param list val_acc/val_loss: validation accuracy and loss
@@ -61,40 +156,3 @@ def plot(train_acc: list, train_loss: list, val_acc: list, val_loss: list, save_
         plt.savefig(save_to)
 
     plt.show()
-
-
-def create_confusion_matrix(y_true: list, y_pred: list, classes: dict={}) -> None:
-    """ creates and plots a confusion matrix given two list (targets and predictions)
-
-    :param list y_true: list of all targets (in this case integers bc. they are indices)
-    :param list y_pred: list of all predictions (in this case one-hot encoded)
-    :param dict classes: a dictionary of the countries with they index representation
-    """
-
-    amount_classes = len(classes)
-
-    confusion_matrix = np.zeros((amount_classes, amount_classes))
-    for idx in range(len(y_true)):
-        target = y_true[idx][0]
-
-        output = y_pred[idx]
-        output = list(output).index(max(output))
-
-        confusion_matrix[target][output] += 1
-
-    fig, ax = plt.subplots(1)
-
-    ax.matshow(confusion_matrix)
-    ax.set_xticks(np.arange(len(list(classes.keys()))))
-    ax.set_yticks(np.arange(len(list(classes.keys()))))
-
-    ax.set_xticklabels(list(classes.keys()))
-    ax.set_yticklabels(list(classes.keys()))
-
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
-    plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
-
-    plt.show()
-
-
-        

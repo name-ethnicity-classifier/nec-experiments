@@ -14,14 +14,14 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 from nameEthnicityDataset import NameEthnicityDataset
 from model import Model
 from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string
-from test_metrics import validate_accuracy, create_confusion_matrix
+from test_metrics import validate_accuracy, create_confusion_matrix, recall, precision, f1_score
 
 import xman
 
 torch.manual_seed(0)
 
 
-with open("datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+with open("datasets/preprocessed_datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
 total_classes = len(classes)
 
 
@@ -66,22 +66,33 @@ class Run:
             losses.append(loss.item())
 
             for i in range(predictions.size()[0]):
-                total_targets.append(targets[i].cpu().detach().numpy())
-                total_predictions.append(predictions[i].cpu().detach().numpy())
+                target_index = targets[i].cpu().detach().numpy()[0]
 
-        # calculate accuracy
-        accuracy = validate_accuracy(total_targets, total_predictions, threshold=self.threshold)
+                prediction = predictions[i].cpu().detach().numpy()
+                prediction_index = list(prediction).index(max(prediction))
 
-        if confusion_matrix:
-            create_confusion_matrix(total_targets, total_predictions, classes=classes)
+                total_targets.append(target_index)
+                total_predictions.append(prediction_index)
 
         # calculate loss
         loss = np.mean(losses)
 
-        return loss, accuracy
+        # calculate accuracy
+        accuracy = validate_accuracy(total_targets, total_predictions, threshold=self.threshold)
+
+        # calculate precision, recall and F1 scores
+        precision_scores = precision(total_targets, total_predictions, classes=total_classes)
+        recall_scores = recall(total_targets, total_predictions, classes=total_classes)
+        f1_scores = f1_score(precision_scores, recall_scores)
+
+        # create confusion matrix
+        if confusion_matrix:
+            create_confusion_matrix(total_targets, total_predictions, classes=classes)
+
+        return loss, accuracy, (precision_scores, recall_scores, f1_scores)
 
     def train(self):
-        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, embedding_size=self.embedding_size).to(device=device)
+        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=False,  embedding_size=self.embedding_size).to(device=device)
         if self.continue_:
             model.load_state_dict(torch.load(self.model_file))
 
@@ -117,7 +128,7 @@ class Run:
             epoch_train_accuracy = validate_accuracy(total_train_targets, total_train_predictions, threshold=self.threshold)
 
             # calculate validation loss and accuracy of last epoch
-            epoch_val_loss, epoch_val_accuracy = self._validate(model, self.validation_set)
+            epoch_val_loss, epoch_val_accuracy, _ = self._validate(model, self.validation_set)
 
             # log training stats
             train_loss_history.append(epoch_train_loss); train_accuracy_history.append(epoch_train_accuracy)
@@ -135,11 +146,11 @@ class Run:
         # plot train-history with xman (uncomment if you have the xman libary installed)
         # self.xmanager.plot_history(save=True)
 
-    def test(self):
-        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, embedding_size=self.embedding_size).to(device=device)
+    def test(self, print_: bool=True):
+        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=False, embedding_size=self.embedding_size).to(device=device)
         model.load_state_dict(torch.load(self.model_file))
 
-        _, accuracy = self._validate(model, self.test_set, confusion_matrix=True)
+        _, accuracy, scores = self._validate(model, self.test_set, confusion_matrix=True)
 
         for names, targets, non_padded_names in tqdm(self.test_set, desc="epoch", ncols=150):
             names, targets = names.to(device=device), targets.to(device=device)
@@ -160,7 +171,6 @@ class Run:
                 prediction = list(np.exp(prediction))
                 certency = np.max(prediction)
 
-                # prediction = [1 if e >= self.threshold else 0 for e in prediction] # using threshold
                 prediction = [1 if e == certency else 0 for e in prediction]
 
                 target_class = list(target).index(1)
@@ -173,29 +183,34 @@ class Run:
                 except:
                     predicted_class = "unknowm"
 
-                name = char_indices_to_string(char_indices=name)
+                if print_:
+                    name = char_indices_to_string(char_indices=name)
 
-                print("\n______________\n")
-                print("name:", name)
+                    print("\n______________\n")
+                    print("name:", name)
 
-                print("predicted as:", predicted_class, "(" + str(round(certency * 100, 4)) + "%)")
-                print("actual target:", target_class)
+                    print("predicted as:", predicted_class, "(" + str(round(certency * 100, 4)) + "%)")
+                    print("actual target:", target_class)
 
+        precisions, recalls, f1_scores = scores
         print("\ntest accuracy:", accuracy)
+        print("precision of every class:", precisions)
+        print("recall of every class:", precisions)
+        print("f1-score of every class:", precisions)
 
 
-run = Run(model_file="models/model7.pt",
-            dataset_path="datasets/final_matrix_name_list.pickle",
-            epochs=5,
+run = Run(model_file="models/best_model8.pt",
+            dataset_path="datasets/preprocessed_datasets/final_matrix_name_list.pickle",
+            epochs=1,
             # hyperparameters
-            lr=0.0001,
-            batch_size=256,
+            lr=0.001,
+            batch_size=512,
             threshold=0.4,
             hidden_size=256,
             layers=2,
-            dropout_chance=0.65,
+            dropout_chance=0.3,
             embedding_size=128,
             continue_=False)
 
-# run.train()
-run.test()
+run.train()
+run.test(print_=True)
