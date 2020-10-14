@@ -45,11 +45,21 @@ class Run:
         self.continue_ = continue_
 
         # initialize experiment manager (uncomment if you have the xman libary installed)
-        # self.xmanager = xman.ExperimentManager(experiment_name="experiment7", new=True, continue_=self.continue_)
-        # self.xmanager.init(optimizer="Adam", 
-        #                     loss_function="NLLLoss", epochs=self.epochs, learning_rate=self.lr, batch_size=self.batch_size,
-        #                     custom_parameters={ "lstm": 1, "hidden-size": self.hidden_size, "layers": self.layers, "dropout-chance": self.dropout_chance,
-        #                     "embedding-size": self.embedding_size, "dense-layer-1": "tanh", "dense-layer-2": "logsoftmax"}) """
+        self.xmanager = xman.ExperimentManager(experiment_name="experiment8", new=False, continue_=self.continue_)
+        self.xmanager.init(optimizer="Adam", 
+                            loss_function="NLLLoss", 
+                            epochs=self.epochs, 
+                            learning_rate=self.lr, 
+                            batch_size=self.batch_size,
+                            custom_parameters={ 
+                                "lstm": 1, 
+                                "hidden-size": self.hidden_size, 
+                                "layers": self.layers, 
+                                "dropout-chance": self.dropout_chance,
+                                "embedding-size": self.embedding_size, 
+                                "dense-layer-1": "tanh", 
+                                "dense-layer-2": "logsoftmax",
+                            })
 
     def _validate(self, model, dataset, confusion_matrix: bool=False):
         validation_dataset = dataset
@@ -108,7 +118,6 @@ class Run:
                 optimizer.zero_grad()
 
                 names, targets = names.to(device=device), targets.to(device=device)
-
                 predictions = model.train()(names, len(names[0]), len(names))
 
                 loss = criterion(predictions, targets.squeeze())
@@ -120,8 +129,10 @@ class Run:
                 
                 # log targets and prediction of every iteration to compute the accuracy later
                 validated_predictions = model.eval()(names, len(names[0]), len(names))
-                for i in range(validated_predictions.size()[0]): total_train_targets.append(targets[i].cpu().detach().numpy()); \
-                                                        total_train_predictions.append(validated_predictions[i].cpu().detach().numpy())
+                for i in range(validated_predictions.size()[0]): 
+                    total_train_targets.append(targets[i].cpu().detach().numpy()[0])
+                    validated_prediction = validated_predictions[i].cpu().detach().numpy()
+                    total_train_predictions.append(list(validated_prediction).index(max(validated_prediction)))
 
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
@@ -141,10 +152,10 @@ class Run:
             torch.save(model.state_dict(), self.model_file)
 
             # log epoch results with xman (uncomment if you have the xman libary installed)
-            # self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)
+            self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)
 
         # plot train-history with xman (uncomment if you have the xman libary installed)
-        # self.xmanager.plot_history(save=True)
+        self.xmanager.plot_history(save=True)
 
     def test(self, print_: bool=True):
         model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=False, embedding_size=self.embedding_size).to(device=device)
@@ -201,16 +212,16 @@ class Run:
 
 run = Run(model_file="models/best_model8.pt",
             dataset_path="datasets/preprocessed_datasets/final_matrix_name_list.pickle",
-            epochs=1,
+            epochs=2,
             # hyperparameters
             lr=0.001,
-            batch_size=512,
+            batch_size=1024,
             threshold=0.4,
             hidden_size=256,
             layers=2,
             dropout_chance=0.3,
             embedding_size=128,
-            continue_=False)
+            continue_=True)
 
 run.train()
 run.test(print_=True)

@@ -125,7 +125,11 @@ def f1_score(precision_scores: list, recall_scores: list) -> list:
     for i in range(len(precision_scores)):
         precision_score, recall_score = precision_scores[i], recall_scores[i]
 
-        f1_score = 2 * ((precision_score * recall_score) / (precision_score + recall_score))
+        try:
+            f1_score = 2 * ((precision_score * recall_score) / (precision_score + recall_score))
+        except:
+            f1_score = "n/a"
+            
         f1_scores.append(f1_score)
 
     return f1_scores
