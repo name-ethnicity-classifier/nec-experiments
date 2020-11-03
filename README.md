@@ -58,6 +58,13 @@ pip install -r requirements.txt
 ![confusion_matrix](readme_images/confusion_matrix.png)
 
 <details>
+<summary><b>precision-/ recall-/ and f1-scores</b></summary>
+
+![scores](readme_images/scores.png)
+
+</details>
+
+<details>
 <summary><b>loss-/ accuracy-curve</b></summary>
 
 ![history](readme_images/history2.png)

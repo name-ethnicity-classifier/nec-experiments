@@ -114,25 +114,53 @@ def recall(y_true: list, y_pred: list, classes: int=10) -> list:
     return all_recalls
 
 
-def f1_score(precision_scores: list, recall_scores: list) -> list:
+def f1_score(precisions: list, recalls: list) -> list:
     """ calculates F1 scores of all classes (against all other classes)
 
-    :param list precision_scores: list containing the precision of each class
-    :param list recall_scores: list containing the recall of each class
+    :param list precisions: list containing the precision of each class
+    :param list recalls: list containing the recall of each class
     :return list: list of the F1 score of each class
     """
+    
     f1_scores = []
-    for i in range(len(precision_scores)):
-        precision_score, recall_score = precision_scores[i], recall_scores[i]
+    for i in range(len(precisions)):
+        precision_score, recall_score = precisions[i], recalls[i]
 
         try:
             f1_score = 2 * ((precision_score * recall_score) / (precision_score + recall_score))
         except:
             f1_score = "n/a"
-            
-        f1_scores.append(f1_score)
+
+        f1_scores.append(round(f1_score, 5))
 
     return f1_scores
+
+
+def score_plot(precisions: list, recalls: list, f1_scores: list, classes: dict={}) -> None:
+    """ plots the precision-, recall- and F!-score for every class
+
+    :param list precisions: list containing the precision of each class
+    :param list recalls: list containing the recall of each class
+    :param list f1_scores: list containing the f1-score of each class
+    """
+
+    fig, axs = plt.subplots(1, 3)
+
+    classes = list(classes.keys())
+
+    axs[0].bar(classes, precisions, color="steelblue", alpha=0.9)
+    axs[0].set_xticklabels(classes, rotation=25)
+    axs[0].title.set_text("precision scores")
+
+    axs[1].bar(classes, recalls, color="orange", alpha=0.85)
+    axs[1].set_xticklabels(classes, rotation=25)
+    axs[1].title.set_text("recall scores")
+
+    axs[2].bar(classes, f1_scores, color="forestgreen", alpha=0.85)
+    axs[2].set_xticklabels(classes, rotation=25)
+    axs[2].title.set_text("f1 scores")
+
+    plt.show()
 
 
 def plot(train_acc: list, train_loss: list, val_acc: list, val_loss: list, save_to: str="") -> None:

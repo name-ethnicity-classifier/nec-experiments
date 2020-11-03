@@ -14,9 +14,10 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 from nameEthnicityDataset import NameEthnicityDataset
 from model import Model
 from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string
-from test_metrics import validate_accuracy, create_confusion_matrix, recall, precision, f1_score
+from test_metrics import validate_accuracy, create_confusion_matrix, recall, precision, f1_score, score_plot
 
 import xman
+
 
 torch.manual_seed(0)
 
@@ -27,7 +28,7 @@ total_classes = len(classes)
 
 class Run:
     def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, batch_size: int=32, \
-                    threshold: float=0.5, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, embedding_size: int=64, continue_: bool=False):
+                    threshold: float=0.5, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, bidirectional: bool=False, embedding_size: int=64, continue_: bool=False):
         self.model_file = model_file
         self.dataset_path = dataset_path
         self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, batch_size=batch_size, class_amount=total_classes, shuffle=(not continue_))
@@ -37,16 +38,17 @@ class Run:
         self.batch_size = batch_size
         self.threshold = threshold
 
-        self.hidden_size = hidden_size
+        self.hidden_size = hidden_size 
         self.layers = layers
         self.dropout_chance = dropout_chance
+        self.bidirectional = bidirectional
         self.embedding_size = embedding_size
 
         self.continue_ = continue_
 
         # initialize experiment manager (uncomment if you have the xman libary installed)
         self.xmanager = xman.ExperimentManager(experiment_name="experiment8", new=False, continue_=self.continue_)
-        self.xmanager.init(optimizer="Adam", 
+        self.xmanager.init(optimizer="RMSprop", 
                             loss_function="NLLLoss", 
                             epochs=self.epochs, 
                             learning_rate=self.lr, 
@@ -58,10 +60,10 @@ class Run:
                                 "dropout-chance": self.dropout_chance,
                                 "embedding-size": self.embedding_size, 
                                 "dense-layer-1": "tanh", 
-                                "dense-layer-2": "logsoftmax",
+                                "dense-layer-2": "logsoftmax"
                             })
 
-    def _validate(self, model, dataset, confusion_matrix: bool=False):
+    def _validate(self, model, dataset, confusion_matrix: bool=False, plot_scores: bool=False):
         validation_dataset = dataset
 
         criterion = nn.NLLLoss()
@@ -98,16 +100,20 @@ class Run:
         # create confusion matrix
         if confusion_matrix:
             create_confusion_matrix(total_targets, total_predictions, classes=classes)
+        
+        if plot_scores:
+            score_plot(precision_scores, recall_scores, f1_scores, classes)
 
         return loss, accuracy, (precision_scores, recall_scores, f1_scores)
 
     def train(self):
-        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=False,  embedding_size=self.embedding_size).to(device=device)
+        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=self.bidirectional, embedding_size=self.embedding_size).to(device=device)
         if self.continue_:
             model.load_state_dict(torch.load(self.model_file))
 
         criterion = nn.NLLLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-4)
+        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.1)
 
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
         for epoch in range(1, (self.epochs + 1)):
@@ -134,6 +140,8 @@ class Run:
                     validated_prediction = validated_predictions[i].cpu().detach().numpy()
                     total_train_predictions.append(list(validated_prediction).index(max(validated_prediction)))
 
+            # scheduler.step()
+
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
             epoch_train_accuracy = validate_accuracy(total_train_targets, total_train_predictions, threshold=self.threshold)
@@ -158,10 +166,10 @@ class Run:
         self.xmanager.plot_history(save=True)
 
     def test(self, print_: bool=True):
-        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=False, embedding_size=self.embedding_size).to(device=device)
+        model = Model(class_amount=total_classes, hidden_size=self.hidden_size, layers=self.layers, dropout_chance=self.dropout_chance, bidirectional=self.bidirectional, embedding_size=self.embedding_size).to(device=device)
         model.load_state_dict(torch.load(self.model_file))
 
-        _, accuracy, scores = self._validate(model, self.test_set, confusion_matrix=True)
+        _, accuracy, scores = self._validate(model, self.test_set, confusion_matrix=True, plot_scores=True)
 
         for names, targets, non_padded_names in tqdm(self.test_set, desc="epoch", ncols=150):
             names, targets = names.to(device=device), targets.to(device=device)
@@ -204,24 +212,26 @@ class Run:
                     print("actual target:", target_class)
 
         precisions, recalls, f1_scores = scores
-        print("\ntest accuracy:", accuracy)
-        print("precision of every class:", precisions)
-        print("recall of every class:", precisions)
-        print("f1-score of every class:", precisions)
+        print("\n\ntest accuracy:", accuracy)
+        print("\nprecision of every class:", precisions)
+        print("\nrecall of every class:", recalls)
+        print("\nf1-score of every class:", f1_scores)
 
 
 run = Run(model_file="models/best_model8.pt",
             dataset_path="datasets/preprocessed_datasets/final_matrix_name_list.pickle",
-            epochs=2,
+            epochs=5,
             # hyperparameters
             lr=0.001,
-            batch_size=1024,
+            batch_size=512,
             threshold=0.4,
             hidden_size=256,
             layers=2,
-            dropout_chance=0.3,
+            dropout_chance=0.6,
+            bidirectional=False,
             embedding_size=128,
-            continue_=True)
+            continue_=False)
 
-run.train()
+
+# run.train()
 run.test(print_=True)
