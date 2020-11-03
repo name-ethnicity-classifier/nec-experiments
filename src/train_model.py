@@ -233,5 +233,5 @@ run = Run(model_file="models/best_model8.pt",
             continue_=False)
 
 
-# run.train()
+run.train()
 run.test(print_=True)
