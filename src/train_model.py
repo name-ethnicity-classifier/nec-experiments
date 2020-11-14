@@ -22,16 +22,15 @@ import xman
 torch.manual_seed(0)
 
 
-with open("datasets/preprocessed_datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+with open("datasets/preprocessed_datasets/index_final_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
 total_classes = len(classes)
 
 
 class Run:
     def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, batch_size: int=32, \
-                    threshold: float=0.5, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, bidirectional: bool=False, embedding_size: int=64, continue_: bool=False):
+                    threshold: float=0.5, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, bidirectional: bool=False, embedding_size: int=64, bi_gram: bool=False, continue_: bool=False):
         self.model_file = model_file
         self.dataset_path = dataset_path
-        self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, batch_size=batch_size, class_amount=total_classes, shuffle=(not continue_))
 
         self.epochs = epochs
         self.lr = lr
@@ -43,12 +42,16 @@ class Run:
         self.dropout_chance = dropout_chance
         self.bidirectional = bidirectional
         self.embedding_size = embedding_size
+        self.bi_gram = bi_gram
+
+        self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, \
+                                    batch_size=batch_size, class_amount=total_classes, augmentation=False, bi_gram=self.bi_gram)
 
         self.continue_ = continue_
 
         # initialize experiment manager (uncomment if you have the xman libary installed)
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment8", new=False, continue_=self.continue_)
-        self.xmanager.init(optimizer="RMSprop", 
+        self.xmanager = xman.ExperimentManager(experiment_name="experiment10", new=False, continue_=self.continue_)
+        self.xmanager.init(optimizer="Adam", 
                             loss_function="NLLLoss", 
                             epochs=self.epochs, 
                             learning_rate=self.lr, 
@@ -113,7 +116,6 @@ class Run:
 
         criterion = nn.NLLLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-4)
-        scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=0.1)
 
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
         for epoch in range(1, (self.epochs + 1)):
@@ -139,8 +141,6 @@ class Run:
                     total_train_targets.append(targets[i].cpu().detach().numpy()[0])
                     validated_prediction = validated_predictions[i].cpu().detach().numpy()
                     total_train_predictions.append(list(validated_prediction).index(max(validated_prediction)))
-
-            # scheduler.step()
 
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
@@ -218,20 +218,23 @@ class Run:
         print("\nf1-score of every class:", f1_scores)
 
 
-run = Run(model_file="models/best_model8.pt",
-            dataset_path="datasets/preprocessed_datasets/final_matrix_name_list.pickle",
+run = Run(model_file="models/model3.pt",
+            dataset_path="datasets/preprocessed_datasets/index_final_matrix_name_list.pickle",
             epochs=5,
             # hyperparameters
             lr=0.001,
-            batch_size=512,
+            batch_size=1024,
             threshold=0.4,
-            hidden_size=256,
-            layers=2,
-            dropout_chance=0.6,
+            hidden_size=200,
+            layers=1,
+            dropout_chance=0.5,
             bidirectional=False,
-            embedding_size=128,
+            embedding_size=200,
+            bi_gram=False,
             continue_=False)
 
 
 run.train()
 run.test(print_=True)
+
+

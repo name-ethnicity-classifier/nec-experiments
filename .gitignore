@@ -2,3 +2,5 @@ src/datasets/*
 .vscode/
 __pychache__/
 src/processing.py
+!src/datasets/create_ngram_table.py
+!src/datasets/bi_gram_table.json
