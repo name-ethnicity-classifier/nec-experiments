@@ -5,8 +5,12 @@
 ## | currently distinguishes between these 10 countries:
 ```json
 {
-    "british": 0, "else": 1, "indian": 2, "american": 3, "german": 4, 
-    "polish": 5, "pakistani": 6, "italian": 7, "romanian": 8, "french": 9, "chinese": 10
+    "british": 0, "else": 1, "indian": 2, "hungarian": 3,
+    "spanish": 4, "german": 5, "zimbabwean": 6, "polish": 7, 
+    "bulgarian": 8, "turkish": 9, "pakistani": 10, "italian": 11,
+    "romanian": 12, "french": 13, "chinese": 14, "swedish": 15,
+    "nigerian": 16, "greek": 17, "japanese": 18, "dutch": 19,
+    "ukrainian": 20, "danish": 21, "russian": 22
 }
 ```
 
@@ -52,10 +56,10 @@ pip install -r requirements.txt
 
 ## | results:
 
- - ### highest archived accuracy: 80.183%
+ - ### highest archived accuracy: 79.6%
  - ### confusion matrix:
 
-![confusion_matrix](readme_images/confusion_matrix.png)
+![confusion_matrix](readme_images/confusion_matrix_more.png)
 
 <details>
 <summary><b>precision-/ recall-/ and f1-scores</b></summary>
@@ -67,7 +71,7 @@ pip install -r requirements.txt
 <details>
 <summary><b>loss-/ accuracy-curve</b></summary>
 
-![history](readme_images/history2.png)
+![history](readme_images/history_more_.png)
 
 </details>
    
@@ -113,3 +117,21 @@ With PCA the high-dimensional outputs embeddings get projected into 3d space.
 - the three findings above are probably largely responsible for the reduction of accuracy of the model
 
 - nationalities with a very specific name-type (like chinese) have more dense clusters and/or are more distant from the middle
+
+
+
+
+
+
+
+
+
+
+
+Dear Prof. Ph.D. Jinhyuk Lee
+
+As part of a social science paper, we are working on a similar task for the classification of name nationalities as you and your colleagues published in 2017. 
+Since the technical part of our work will be similar to yours, we have implemented your architecture and are trying to replicate your results. Although we seem to have a much larger data set, it seems impossible to achieve an accuracy of ~82% for 127 countries. Since many of the nationalities you selected speak the same language and the amount of classes seem to be quite many for such a classification task, we wanted to ask you if we understood you correctly: Your team trained the model on the 127 nationalities (which are represented here: https://github.com/jhyuklee/ethnicity-tensorflow/blob/master/data/cleaned/country_to_idx.txt) and achieved an accuracy of 82? We would be grateful if you could perhaps give us some important hints and tips to increase our model to your achieved performance.
+
+With best regards,
+Theodor Peifer
