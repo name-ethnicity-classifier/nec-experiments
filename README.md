@@ -64,14 +64,14 @@ pip install -r requirements.txt
 <details>
 <summary><b>precision-/ recall-/ and f1-scores</b></summary>
 
-![scores](readme_images/scores.png)
+![scores](readme_images/scores_more.png)
 
 </details>
 
 <details>
 <summary><b>loss-/ accuracy-curve</b></summary>
 
-![history](readme_images/history_more_.png)
+![history](readme_images/history_more.png)
 
 </details>
    
