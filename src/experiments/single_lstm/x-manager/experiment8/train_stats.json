@@ -1,0 +1,26 @@
+{
+    "hyperparameters": {
+        "optimizer": "RMSprop",
+        "loss-function": "NLLLoss",
+        "epochs": 5,
+        "learning-rate": [
+            0.001
+        ],
+        "batch-size": [
+            512
+        ],
+        "lstm": 1,
+        "hidden-size": 256,
+        "layers": 2,
+        "dropout-chance": 0.6,
+        "embedding-size": 128,
+        "dense-layer-1": "tanh",
+        "dense-layer-2": "logsoftmax"
+    },
+    "results": {
+        "train-accuracy": [],
+        "train-loss": [],
+        "validation-accuracy": [],
+        "validation-loss": []
+    }
+}

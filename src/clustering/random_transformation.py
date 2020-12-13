@@ -65,7 +65,6 @@ def create_clusters(dataset_path: str="", embedding_size: int=256, batch_size=51
         ax.scatter(cluster[0][:amount], cluster[1][:amount], cluster[2][:amount], color=colors[i], label=list(classes.keys())[list(classes.values()).index(i)])
     
     ax.legend()
-    plt.title("random transformation")
     plt.show()
 
     def rotate(angle):

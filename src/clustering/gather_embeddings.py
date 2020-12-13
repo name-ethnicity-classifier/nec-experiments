@@ -32,7 +32,7 @@ batch_size = 512
 dataset_path = "../datasets/final_matrix_name_list.pickle"
 model_file = "../models/model7.pt"
 
-embeddings_dataset_file = "dataset/lstm_embeddings_train.npy"
+embeddings_dataset_file = "dataset/lstm_embeddings_test.npy"
 
 
 def get_embeddings():
@@ -42,7 +42,7 @@ def get_embeddings():
     train_set, validation_set, test_set = create_dataloader(dataset_path=dataset_path, test_size=0.025, val_size=0.025, batch_size=batch_size, class_amount=total_classes, shuffle=False)
     
     total_lstm_embeddings = []
-    for names, targets, _ in tqdm(train_set, desc="", ncols=150):
+    for names, targets, _ in tqdm(test_set, desc="", ncols=150):
         names, targets = names.to(device=device), targets.to(device=device)
 
         lstm_embeddings, _ = model.eval()(names, len(names[0]), len(names), return_lstm_embeddings=True)
