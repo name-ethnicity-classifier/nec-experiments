@@ -41,10 +41,9 @@ class Run:
         self.dropout_chance = dropout_chance
         self.bidirectional = bidirectional
         self.embedding_size = embedding_size
-        self.n_gram = n_gram
 
         self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, \
-                                    batch_size=batch_size, class_amount=total_classes, augmentation=False, n_gram=self.n_gram)
+                                    batch_size=batch_size, class_amount=total_classes, augmentation=False)
 
         self.continue_ = continue_
 
@@ -56,9 +55,10 @@ class Run:
                             learning_rate=self.lr, 
                             batch_size=self.batch_size,
                             custom_parameters={ 
-                                "lstm": 3, 
+                                "lstm": 1, 
                                 "hidden-size": self.hidden_size, 
                                 "layers": self.layers, 
+                                "attention-heads": 1,
                                 "dropout-chance": self.dropout_chance,
                                 "embedding-size": self.embedding_size, 
                                 "dense-layer-1": "relu",
@@ -250,7 +250,6 @@ run = Run(model_file="models/model2.pt",
             dropout_chance=0.5,
             bidirectional=True,
             embedding_size=200,
-            n_gram=3,
             continue_=True)     # <------------------------
 
 

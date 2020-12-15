@@ -60,7 +60,7 @@ def custom_collate(batch):
 
 
 def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: float=0.01, batch_size: int=32, class_amount: int=10, \
-                                                                            augmentation: bool=False, n_gram: int=1):
+                                                                            augmentation: bool=False):
     """ create three dataloader (train, test, validation)
 
     :param str dataset_path: path to dataset
@@ -77,9 +77,9 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
 
     train_set, test_set, validation_set = dataset[(test_size+val_size):], dataset[:test_size], dataset[test_size:(test_size+val_size)]
 
-    train_set = NameEthnicityDataset(dataset=train_set, class_amount=class_amount, augmentation=augmentation, n_gram=n_gram)
-    test_set = NameEthnicityDataset(dataset=test_set, class_amount=class_amount, augmentation=False, n_gram=n_gram)
-    val_set = NameEthnicityDataset(dataset=validation_set, class_amount=class_amount, augmentation=False, n_gram=n_gram)
+    train_set = NameEthnicityDataset(dataset=train_set, class_amount=class_amount, augmentation=augmentation)
+    test_set = NameEthnicityDataset(dataset=test_set, class_amount=class_amount, augmentation=False)
+    val_set = NameEthnicityDataset(dataset=validation_set, class_amount=class_amount, augmentation=False)
 
     train_dataloader = torch.utils.data.DataLoader(
         train_set,

@@ -11,7 +11,7 @@ from gensim.models import Word2Vec
 
 
 class NameEthnicityDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset: list=[], class_amount: int=10, augmentation: bool=False, n_gram: int=1):
+    def __init__(self, dataset: list=[], class_amount: int=10, augmentation: bool=False):
         """ constructor
 
         :param list dataset: dataset list
@@ -22,11 +22,10 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         self.class_amount = class_amount
 
         self.augmentation = augmentation
-        self.n_gram = n_gram
 
-        #self.unigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_unigram_model.model")
-        #self.bigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_bigram_model.model")
-        #self.trigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_trigram_model.model")
+        # self.unigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_unigram_model.model")
+        # self.bigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_bigram_model.model")
+        # self.trigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_trigram_model.model")
 
     def _preprocess_targets(self, int_representation: int, one_hot: bool=True) -> list:
         """ create one-hot encoding of the target

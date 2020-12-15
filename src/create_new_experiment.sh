@@ -4,7 +4,7 @@
 # help function
 function help_ {
    cat << EOF
-usage: create_new_experiment.zsh -n/--name <folder/epxeriment name>
+usage: create_new_experiment.zsh -n/--name <epxeriment-name>
 EOF
    exit 1
 }
@@ -19,4 +19,4 @@ if [ "$1" != "-n" ] && [ "$1" != "--name" ]; then
 fi
 
 # finally create new experiment environment
-cp -r ./template_experiment ./$2
+cp -r experiments/template_experiment experiments/$2
