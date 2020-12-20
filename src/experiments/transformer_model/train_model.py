@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import json
+from typing import List, Tuple
 
 import torch
 import torch.utils.data
@@ -27,26 +28,45 @@ total_classes = len(classes)
 
 
 class Run:
-    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, batch_size: int=32, \
-                    threshold: float=0.5, num_heads: int=10, num_layers: int=1, dropout_chance: float=0.5, embedding_size: int=64, n_gram: int=1, continue_: bool=False):
+    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, lr_warmup: Tuple[float]=(0.00001, 0.001, 1.05), \
+                        lr_decay: Tuple[float]=(100, 0.99), batch_size: int=32, threshold: float=0.5, num_heads: int=10, num_layers: int=1, dropout_chance: float=0.5, \
+                        embedding_size: int=64, n_gram: List[int]=[1], continue_: bool=False):
 
+        # model and dataset path
         self.model_file = model_file
         self.dataset_path = dataset_path
 
+        # train-parameters
         self.epochs = epochs
-        self.lr = lr
         self.batch_size = batch_size
         self.threshold = threshold
 
+        # initial learning rate
+        self.lr = lr
+
+        # warmup parameters
+        self.lr_warmup_intervall = lr_warmup[0]
+        self.lr_warmup_end = lr_warmup[1]
+        self.lr_warmup_factor = lr_warmup[2]
+        self.do_lr_warmup = lr_warmup[3]
+
+        # decay parameters
+        self.lr_decay_intervall = lr_decay[0]
+        self.lr_decay_factor = lr_decay[1]
+        self.do_lr_decay = lr_decay[2]
+
+        # model parameters
         self.num_heads = num_heads 
         self.num_layers = num_layers
         self.dropout_chance = dropout_chance
         self.embedding_size = embedding_size
         self.n_gram = n_gram
 
+        # dataloaders
         self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, \
                                     batch_size=batch_size, class_amount=total_classes, augmentation=False, n_gram=self.n_gram)
 
+        # continue training or not
         self.continue_ = continue_
 
         # initialize experiment manager (uncomment if you have the xman libary installed)
@@ -117,7 +137,7 @@ class Run:
             model.load_state_dict(torch.load(self.model_file))
 
         criterion = nn.NLLLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-4)
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, betas=(0.9, 0.98), weight_decay=1e-9)
 
         iterations = 0
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
@@ -148,15 +168,20 @@ class Run:
                 
                 iterations += 1
 
-                # warm up training by increasing the learning rate (if wanted uncomment)
-                """if iterations % 100 == 0 and optimizer.param_groups[0]["lr"] < 0.003:
-                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * 1.075
-                    print("\n{0:f}".format(optimizer.param_groups[0]["lr"]))"""
-                
-                # decay (if wanted uncomment)
-                if iterations % 100 == 0:
-                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * 0.9825
-                    print("\n{0:f}".format(optimizer.param_groups[0]["lr"]))
+                # stop warmup when wanted lr is reached
+                if optimizer.param_groups[0]["lr"] >= self.lr_warmup_end:
+                    self.do_lr_warmup = False
+
+                # warm up training by increasing the learning rate
+                if iterations % self.lr_warmup_intervall == 0 and optimizer.param_groups[0]["lr"] < self.lr_warmup_end and self.do_lr_warmup == True:
+                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * self.lr_warmup_factor
+                    print("\nwarum-up to: {0:f}".format(optimizer.param_groups[0]["lr"]))
+
+                # decay when warmup is finished
+                if iterations % self.lr_decay_intervall == 0 and self.do_lr_warmup == False and self.do_lr_decay:
+                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * self.lr_decay_factor
+                    print("\ndecay to: {0:f}".format(optimizer.param_groups[0]["lr"]))
+
 
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
@@ -237,22 +262,22 @@ class Run:
         print("\nf1-score of every class:", f1_scores)
 
 
-# TODO just continue training, after warum up, the lr will now decay from 0.00305 with rate 0.9825
-
 
 run = Run(model_file="models/model1.pt",
             dataset_path="../../datasets/preprocessed_datasets/final_more_matrix_name_list.pickle",
             epochs=2,
             # hyperparameters
-            lr=0.00305,
-            batch_size=128,
+            lr=0.00001,
+            lr_warmup=(100, 0.0025, 1.025, True),
+            lr_decay=(100, 0.985, True),
+            batch_size=512,
             threshold=0.4,
-            num_heads=2,
-            num_layers=4,
+            num_heads=5,
+            num_layers=8,
             dropout_chance=0.5,
             embedding_size=200,
             n_gram=[1],
-            continue_=True)
+            continue_=False)
 
 
 run.train()

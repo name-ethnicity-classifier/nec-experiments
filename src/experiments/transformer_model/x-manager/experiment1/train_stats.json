@@ -2,28 +2,16 @@
     "hyperparameters": {
         "optimizer": "Adam",
         "loss-function": "NLLLoss",
-        "epochs": 1,
+        "epochs": 2,
         "learning-rate": [
-            1e-05,
-            [
-                3.7e-05,
-                1
-            ],
-            [
-                0.00104,
-                3
-            ],
-            [
-                0.00305,
-                4
-            ]
+            1e-05
         ],
         "batch-size": [
-            128
+            512
         ],
         "transformer": true,
-        "num-heads": 2,
-        "num-layers": 4,
+        "num-heads": 5,
+        "num-layers": 8,
         "dropout-chance": 0.5,
         "embedding-size": 200,
         "dense-layer-1": "gelu",
@@ -31,37 +19,9 @@
         "triple-ngram": false
     },
     "results": {
-        "train-accuracy": [
-            11.90937,
-            24.63805,
-            36.97982,
-            42.63504,
-            45.22945,
-            46.98379
-        ],
-        "train-loss": [
-            3.0047233723327222,
-            2.6585789443814463,
-            2.2053663073588794,
-            2.038140583671777,
-            1.9093931750970887,
-            1.8592774638892433
-        ],
-        "validation-accuracy": [
-            18.69755,
-            32.07452,
-            39.61061,
-            43.48775,
-            47.01242,
-            47.06277
-        ],
-        "validation-loss": [
-            2.8011880783324545,
-            2.303322254343236,
-            2.0210380807836006,
-            1.935691886759819,
-            1.887294262013537,
-            1.8962659759724394
-        ]
+        "train-accuracy": [],
+        "train-loss": [],
+        "validation-accuracy": [],
+        "validation-loss": []
     }
 }
