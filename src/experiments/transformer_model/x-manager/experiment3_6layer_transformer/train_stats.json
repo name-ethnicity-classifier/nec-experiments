@@ -1,0 +1,41 @@
+{
+    "hyperparameters": {
+        "optimizer": "Adam",
+        "loss-function": "NLLLoss",
+        "epochs": 10,
+        "learning-rate": [
+            0.0035
+        ],
+        "batch-size": [
+            300
+        ],
+        "init-learning-rate": 0.003,
+        "lr-warmup-steps": 500,
+        "decay-rate": 0.9875,
+        "decay-intervall": 95,
+        "num-heads": 1,
+        "transformer-layers": 3,
+        "dropout-chance": 0.2,
+        "embedding-size": 300,
+        "dense-layer-1": "relu",
+        "ngram": 1
+    },
+    "results": {
+        "train-accuracy": [
+            19.201,
+            4.34185
+        ],
+        "train-loss": [
+            2.7455018183568143,
+            3.1357343346922546
+        ],
+        "validation-accuracy": [
+            4.32192,
+            4.32192
+        ],
+        "validation-loss": [
+            3.1356843173503877,
+            3.135901403427124
+        ]
+    }
+}

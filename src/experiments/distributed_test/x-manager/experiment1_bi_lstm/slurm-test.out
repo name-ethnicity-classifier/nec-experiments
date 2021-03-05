@@ -1,0 +1,458 @@
+validating:   0%|                                                                                                               | 0/6 [00:00<?, ?it/s]validating:  17%|█████████████████▏                                                                                     | 1/6 [00:08<00:42,  8.52s/it]validating:  33%|██████████████████████████████████▎                                                                    | 2/6 [00:16<00:33,  8.45s/it]validating:  50%|███████████████████████████████████████████████████▌                                                   | 3/6 [00:25<00:25,  8.40s/it]validating:  67%|████████████████████████████████████████████████████████████████████▋                                  | 4/6 [00:33<00:16,  8.36s/it]validating:  83%|█████████████████████████████████████████████████████████████████████████████████████▊                 | 5/6 [00:41<00:08,  8.43s/it]validating: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:50<00:00,  8.32s/it]validating: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:50<00:00,  8.34s/it]
+/rds/user/lh623/hpc-work/name-ethnicity-classification/src/experiments/paper2017_implementation/test_metrics.py:154: UserWarning: FixedFormatter should only be used together with FixedLocator
+  axs[0].set_xticklabels(classes, rotation=75)
+/rds/user/lh623/hpc-work/name-ethnicity-classification/src/experiments/paper2017_implementation/test_metrics.py:158: UserWarning: FixedFormatter should only be used together with FixedLocator
+  axs[1].set_xticklabels(classes, rotation=75)
+/rds/user/lh623/hpc-work/name-ethnicity-classification/src/experiments/paper2017_implementation/test_metrics.py:162: UserWarning: FixedFormatter should only be used together with FixedLocator
+  axs[2].set_xticklabels(classes, rotation=75)
+epoch:   0%|                                                                                                                    | 0/6 [00:00<?, ?it/s]
+
+test accuracy: 79.43941
+epoch:  17%|██████████████████                                                                                          | 1/6 [00:08<00:42,  8.57s/it]epoch:  33%|████████████████████████████████████                                                                        | 2/6 [00:17<00:34,  8.56s/it]epoch:  50%|██████████████████████████████████████████████████████                                                      | 3/6 [00:25<00:25,  8.55s/it]epoch:  67%|████████████████████████████████████████████████████████████████████████                                    | 4/6 [00:34<00:17,  8.52s/it]epoch:  83%|██████████████████████████████████████████████████████████████████████████████████████████                  | 5/6 [00:42<00:08,  8.47s/it]epoch: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:50<00:00,  8.32s/it]epoch: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████| 6/6 [00:50<00:00,  8.41s/it]
+
+______________
+
+name: heine dalsgaard
+predicted as: danish (97.9604%)
+actual target: danish
+
+______________
+
+name: krzysztof cieszynski
+predicted as: polish (98.542%)
+actual target: polish
+
+______________
+
+name: joyce belny-mellinger
+predicted as: french (58.8201%)
+actual target: french
+
+______________
+
+name: andreas hermanus van fessem
+predicted as: dutch (99.5261%)
+actual target: dutch
+
+______________
+
+name: nicolai sneftrup olesen
+predicted as: danish (99.1333%)
+actual target: danish
+
+______________
+
+name: vladimir matyunin
+predicted as: russian (91.0708%)
+actual target: russian
+
+______________
+
+name: lubov gavrysh
+predicted as: ukrainian (98.8775%)
+actual target: ukrainian
+
+______________
+
+name: chyke ihechikara ohuegbe
+predicted as: nigerian (89.0698%)
+actual target: nigerian
+
+______________
+
+name: ivar hauge line
+predicted as: swedish (67.4983%)
+actual target: else
+
+______________
+
+name: volodymyr strashenko
+predicted as: ukrainian (99.211%)
+actual target: ukrainian
+
+______________
+
+name: masaru ohara
+predicted as: japanese (99.988%)
+actual target: japanese
+
+______________
+
+name: ihor ustymenko
+predicted as: ukrainian (99.7641%)
+actual target: ukrainian
+
+______________
+
+name: ivan kolev kolev
+predicted as: bulgarian (99.4231%)
+actual target: bulgarian
+
+______________
+
+name: fabrice roger daniel bregier
+predicted as: french (99.0546%)
+actual target: french
+
+______________
+
+name: zhengrong liang
+predicted as: chinese (99.5569%)
+actual target: chinese
+
+______________
+
+name: vladimir dobin
+predicted as: russian (84.9554%)
+actual target: russian
+
+______________
+
+name: valerie houweling
+predicted as: dutch (92.6281%)
+actual target: french
+
+______________
+
+name: deeka yusuf idd
+predicted as: indian (65.103%)
+actual target: danish
+
+______________
+
+name: abishek mehta
+predicted as: indian (87.7312%)
+actual target: indian
+
+______________
+
+name: kathleen boal
+predicted as: british (68.1513%)
+actual target: else
+
+______________
+
+name: joshua singh
+predicted as: indian (71.5905%)
+actual target: indian
+
+______________
+
+name: roman kulik
+predicted as: ukrainian (97.545%)
+actual target: ukrainian
+
+______________
+
+name: kees van wingerden
+predicted as: dutch (99.7188%)
+actual target: dutch
+
+______________
+
+name: pooja hiteshkumar soni
+predicted as: indian (96.052%)
+actual target: indian
+
+______________
+
+name: kayo fujiwara
+predicted as: japanese (99.841%)
+actual target: japanese
+
+______________
+
+name: alberto leyes  valladares
+predicted as: spanish (99.8816%)
+actual target: spanish
+
+______________
+
+name: md abu sayeed
+predicted as: else (57.7596%)
+actual target: else
+
+______________
+
+name: mario volpe
+predicted as: german (45.0547%)
+actual target: italian
+
+______________
+
+name: anna lovisa winberg
+predicted as: swedish (97.5171%)
+actual target: swedish
+
+______________
+
+name: mikael pertot
+predicted as: swedish (44.8017%)
+actual target: swedish
+
+______________
+
+name: bekir gungormez
+predicted as: turkish (99.9442%)
+actual target: turkish
+
+______________
+
+name: rocco luigi migliarini
+predicted as: italian (99.522%)
+actual target: dutch
+
+______________
+
+name: mikael bror goran pettersson
+predicted as: swedish (99.8662%)
+actual target: swedish
+
+______________
+
+name: cynthia wadzanayi bepura
+predicted as: zimbabwean (99.2684%)
+actual target: zimbabwean
+
+______________
+
+name: fabrizio cesario
+predicted as: italian (99.6242%)
+actual target: italian
+
+______________
+
+name: karl ernst michael handrick
+predicted as: german (53.397%)
+actual target: german
+
+______________
+
+name: xi yan
+predicted as: chinese (98.6947%)
+actual target: chinese
+
+______________
+
+name: gabriele urbinati
+predicted as: italian (97.9598%)
+actual target: italian
+
+______________
+
+name: maalya reddy nagulapally
+predicted as: indian (92.0453%)
+actual target: indian
+
+______________
+
+name: atanas tsvetkov atanasov
+predicted as: bulgarian (99.9807%)
+actual target: bulgarian
+
+______________
+
+name: batirai manhando
+predicted as: zimbabwean (99.9726%)
+actual target: zimbabwean
+
+______________
+
+name: jean luc cavro
+predicted as: french (88.3534%)
+actual target: french
+
+______________
+
+name: luciene veronica cortezao
+predicted as: italian (47.4211%)
+actual target: else
+
+______________
+
+name: harold georgiou
+predicted as: greek (36.3386%)
+actual target: greek
+
+______________
+
+name: ian koay
+predicted as: else (28.7884%)
+actual target: else
+
+______________
+
+name: michele varrasso
+predicted as: italian (65.5412%)
+actual target: italian
+
+______________
+
+name: daniela stanimirova
+predicted as: bulgarian (95.1246%)
+actual target: bulgarian
+
+______________
+
+name: avram mustata
+predicted as: romanian (39.1098%)
+actual target: romanian
+
+______________
+
+name: ulrik lindeblad birger
+predicted as: danish (99.7964%)
+actual target: swedish
+
+______________
+
+name: usman younas
+predicted as: pakistani (98.3314%)
+actual target: pakistani
+
+______________
+
+name: vladimir kovalskii
+predicted as: russian (95.9256%)
+actual target: russian
+
+______________
+
+name: mohammad asghar choudhry
+predicted as: pakistani (59.539%)
+actual target: german
+
+______________
+
+name: konrad mateusz szymczak
+predicted as: polish (99.1538%)
+actual target: polish
+
+______________
+
+name: federico esteban brunner torres
+predicted as: spanish (99.2814%)
+actual target: spanish
+
+______________
+
+name: rasmus dyring-andersen
+predicted as: danish (98.9987%)
+actual target: danish
+
+______________
+
+name: loveth okere
+predicted as: nigerian (88.5705%)
+actual target: nigerian
+
+______________
+
+name: hedvig johanna abraham
+predicted as: swedish (59.8571%)
+actual target: hungarian
+
+______________
+
+name: georgios fergadis
+predicted as: greek (99.9145%)
+actual target: greek
+
+______________
+
+name: iurii tsarinnyi
+predicted as: ukrainian (98.3827%)
+actual target: ukrainian
+
+______________
+
+name: haruhiko kaneko
+predicted as: japanese (99.9794%)
+actual target: japanese
+
+______________
+
+name: paulina maria czarnecka
+predicted as: polish (99.8263%)
+actual target: polish
+
+______________
+
+name: matthew james baldwin
+predicted as: british (75.7938%)
+actual target: british
+
+______________
+
+name: vasileios katsaliros
+predicted as: greek (99.9638%)
+actual target: greek
+
+______________
+
+name: olusegun waheed abaniwonnda
+predicted as: nigerian (93.4175%)
+actual target: nigerian
+
+______________
+
+name: cerasela porcaru
+predicted as: romanian (99.9632%)
+actual target: romanian
+
+______________
+
+name: marek przemyslaw gawronski
+predicted as: polish (99.4612%)
+actual target: polish
+
+______________
+
+name: james edward tovey
+predicted as: british (79.2225%)
+actual target: british
+
+______________
+
+name: raju gehani
+predicted as: indian (92.0103%)
+actual target: indian
+
+______________
+
+name: moises borromeo
+predicted as: spanish (49.3818%)
+actual target: else
+
+______________
+
+name: jean-marie grisard
+predicted as: french (99.5245%)
+actual target: french
+
+______________
+
+name: emmanuel abiodun aladeniyi
+predicted as: nigerian (97.7583%)
+actual target: nigerian
+
+______________
+
+name: toshihiko tsunakawa
+predicted as: japanese (99.9987%)
+actual target: japanese
+
+______________
+
+name: mette sensky
+predicted as: danish (99.062%)
+actual target: danish
+
+
+test accuracy: 79.43941
+
+precision of every class: [0.56631, 0.50838, 0.7608, 0.87405, 0.77016, 0.62121, 0.86809, 0.8985, 0.95219, 0.91912, 0.7795, 0.81333, 0.85714, 0.65385, 0.92913, 0.67729, 0.81139, 0.92241, 0.98069, 0.67961, 0.85874, 0.72143, 0.79783]
+
+recall of every class: [0.64228, 0.32852, 0.87072, 0.87072, 0.75794, 0.656, 0.82927, 0.91571, 0.91221, 0.93284, 0.89007, 0.7379, 0.87747, 0.73333, 0.97521, 0.63433, 0.84444, 0.89167, 0.98069, 0.61404, 0.86842, 0.73188, 0.78092]
+
+f1-score of every class: [0.60191, 0.39912, 0.81206, 0.87238, 0.764, 0.63813, 0.84824, 0.90702, 0.93177, 0.92593, 0.83112, 0.77378, 0.86719, 0.69131, 0.95161, 0.65511, 0.82759, 0.90678, 0.98069, 0.64516, 0.86355, 0.72662, 0.78928]

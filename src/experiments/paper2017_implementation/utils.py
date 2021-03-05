@@ -60,7 +60,7 @@ def custom_collate(batch):
 
 
 def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: float=0.01, batch_size: int=32, class_amount: int=10, \
-                                                                            augmentation: bool=False, n_gram: int=1):
+                                                                            augmentation: float=0.0):
     """ create three dataloader (train, test, validation)
 
     :param str dataset_path: path to dataset
@@ -69,29 +69,33 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     :return torch.Dataloader: train-, test- and val-dataloader
     """
 
+    np.random.seed(0)
+
     with open(dataset_path, "rb") as f:
         dataset = pickle.load(f)
+
+    np.random.shuffle(dataset)
 
     test_size = int(np.round(len(dataset)*test_size))
     val_size = int(np.round(len(dataset)*val_size))
 
     train_set, test_set, validation_set = dataset[(test_size+val_size):], dataset[:test_size], dataset[test_size:(test_size+val_size)]
 
-    train_set = NameEthnicityDataset(dataset=train_set, class_amount=class_amount, augmentation=augmentation, n_gram=n_gram)
-    test_set = NameEthnicityDataset(dataset=test_set, class_amount=class_amount, augmentation=False, n_gram=n_gram)
-    val_set = NameEthnicityDataset(dataset=validation_set, class_amount=class_amount, augmentation=False, n_gram=n_gram)
+    train_set = NameEthnicityDataset(dataset=train_set, class_amount=class_amount, augmentation=augmentation)
+    test_set = NameEthnicityDataset(dataset=test_set, class_amount=class_amount, augmentation=0.0)
+    val_set = NameEthnicityDataset(dataset=validation_set, class_amount=class_amount, augmentation=0.0)
 
     train_dataloader = torch.utils.data.DataLoader(
         train_set,
         batch_size=batch_size,
-        num_workers=1,
+        num_workers=0,
         shuffle=True,
         collate_fn=custom_collate
     )
     val_dataloader = torch.utils.data.DataLoader(
         val_set,
         batch_size=int(batch_size),
-        num_workers=1,
+        num_workers=0,
         shuffle=True,
         collate_fn=custom_collate
 
@@ -99,7 +103,7 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     test_dataloader = torch.utils.data.DataLoader(
         test_set,
         batch_size=int(batch_size),
-        num_workers=1,
+        num_workers=0,
         shuffle=True,
         collate_fn=custom_collate
     )

@@ -18,21 +18,28 @@ from test_metrics import validate_accuracy, create_confusion_matrix, recall, pre
 import xman
 
 
+import wandb
+
 torch.manual_seed(0)
 
 
-with open("../../datasets/preprocessed_datasets/final_more_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+# with open("../../datasets/preprocessed_datasets/final_more_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+with open("../../datasets/preprocessed_datasets/final_more_nationalities/nationality_classes.json", "r") as f: classes = json.load(f) 
 total_classes = len(classes)
 
 
 class Run:
-    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, batch_size: int=32, \
-                    threshold: float=0.5, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, bidirectional: bool=False, embedding_size: int=64, n_gram: int=1, continue_: bool=False):
+    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, lr_schedule: tuple=None, batch_size: int=32, \
+            threshold: float=0.5, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, bidirectional: bool=False, embedding_size: int=64, n_gram: int=1, augmentation: float=0.0, continue_: bool=False):
+
         self.model_file = model_file
         self.dataset_path = dataset_path
 
         self.epochs = epochs
         self.lr = lr
+        self.lr_decay_rate = lr_schedule[0]
+        self.lr_decay_intervall = lr_schedule[1]
+
         self.batch_size = batch_size
         self.threshold = threshold
 
@@ -42,29 +49,50 @@ class Run:
         self.bidirectional = bidirectional
         self.embedding_size = embedding_size
         self.n_gram = n_gram
+        self.augmentation = augmentation
 
         self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, \
-                                    batch_size=batch_size, class_amount=total_classes, augmentation=False, n_gram=self.n_gram)
+                                    batch_size=batch_size, class_amount=total_classes, augmentation=self.augmentation)
 
         self.continue_ = continue_
 
+        """wandb.init(project="name-ethnicity-classification", entity="theodorp", id="272iz15t", resume=self.continue_, config={
+                                "optimizer": "Adam",
+                                "loss-function": "NLLLoss",
+                                "init-learning-rate": 0.0035,
+                                "batch-size": self.batch_size,
+                                "hidden-size": self.hidden_size,
+                                "rnn-layers": self.layers,
+                                "decay-rate": self.lr_decay_rate,
+                                "decay-intervall": self.lr_decay_intervall,
+                                "dropout-chance": self.dropout_chance,
+                                "embedding-size": self.embedding_size,
+                                "dense-layer-1": "relu",
+                                "bi-directional": self.bidirectional,
+                                "ngram": 3,
+                                "augmentation": self.augmentation
+                            })"""
+
         # initialize experiment manager (uncomment if you have the xman libary installed)
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment2", continue_=self.continue_)
+        self.xmanager = xman.ExperimentManager(experiment_name="experiment5_shuffle_lstm", continue_=self.continue_)
         self.xmanager.init(optimizer="Adam", 
                             loss_function="NLLLoss", 
                             epochs=self.epochs, 
                             learning_rate=self.lr, 
                             batch_size=self.batch_size,
                             custom_parameters={ 
-                                "lstm": 3, 
+                                "lstm": 1, 
                                 "hidden-size": self.hidden_size, 
-                                "layers": self.layers, 
+                                "layers": self.layers,
+                                "decay-rate": self.lr_decay_rate,
+                                "decay-intervall": self.lr_decay_intervall,
                                 "dropout-chance": self.dropout_chance,
                                 "embedding-size": self.embedding_size, 
                                 "dense-layer-1": "relu",
                                 "dense-layer-2": "logsoftmax",
-                                "bi-directional": False,
-                                "triple-ngram": True
+                                "bi-directional": self.bidirectional,
+                                "triple-ngram": True,
+                                "augmentation": self.augmentation
                             })
 
     def _validate(self, model, dataset, confusion_matrix: bool=False, plot_scores: bool=False):
@@ -116,8 +144,10 @@ class Run:
         if self.continue_:
             model.load_state_dict(torch.load(self.model_file))
 
+        # wandb.watch(model)
+
         criterion = nn.NLLLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-4)
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-5)
 
         iterations = 0
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
@@ -154,8 +184,9 @@ class Run:
                     print("\n{0:f}".format(optimizer.param_groups[0]["lr"]))"""
                 
                 # decay
-                if iterations % 100 == 0:
-                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * 0.975
+                if iterations % self.lr_decay_intervall == 0:
+                    # wandb.log({"learning rate": optimizer.param_groups[0]["lr"]})
+                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * self.lr_decay_rate
 
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
@@ -174,6 +205,10 @@ class Run:
 
             # save checkpoint of model
             torch.save(model.state_dict(), self.model_file)
+
+            # log with wandb
+            #wandb.log({"validation-accuracy": epoch_val_accuracy, "validation-loss": epoch_val_loss, "train-accuracy": epoch_train_accuracy, "train-loss": epoch_train_loss})
+            #os.path.join(wandb.run.dir, "model.pt")
 
             # log epoch results with xman (uncomment if you have the xman libary installed)
             self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)
@@ -195,39 +230,42 @@ class Run:
             predictions = model.eval()(names_n1, names_n2, names_n3)
             predictions, targets, names_n1 = predictions.cpu().detach().numpy(), targets.cpu().detach().numpy(), names_n1.cpu().detach().numpy()
 
-            for idx in range(len(names_n1)):
-                names_n1, prediction, target, non_padded_name = names_n1[idx], predictions[idx], targets[idx], non_padded_names[idx]
+            try:
+                for idx in range(len(names_n1)):
+                    names_n1, prediction, target, non_padded_name = names_n1[idx], predictions[idx], targets[idx], non_padded_names[idx]
 
-                # convert to one-hot target
-                amount_classes = prediction.shape[0]
-                target_empty = np.zeros((amount_classes))
-                target_empty[target] = 1
-                target = target_empty
+                    # convert to one-hot target
+                    amount_classes = prediction.shape[0]
+                    target_empty = np.zeros((amount_classes))
+                    target_empty[target] = 1
+                    target = target_empty
 
-                # convert log-softmax to one-hot
-                prediction = list(np.exp(prediction))
-                certency = np.max(prediction)
+                    # convert log-softmax to one-hot
+                    prediction = list(np.exp(prediction))
+                    certency = np.max(prediction)
+    
+                    prediction = [1 if e == certency else 0 for e in prediction]
 
-                prediction = [1 if e == certency else 0 for e in prediction]
+                    target_class = list(target).index(1)
+                    target_class = list(classes.keys())[list(classes.values()).index(target_class)]
 
-                target_class = list(target).index(1)
-                target_class = list(classes.keys())[list(classes.values()).index(target_class)]
-
-                try:
-                    # catch, if no value is above the threshold (if used)
-                    predicted_class = list(prediction).index(1)
-                    predicted_class = list(classes.keys())[list(classes.values()).index(predicted_class)]
-                except:
-                    predicted_class = "unknowm"
-
-                if print_:
-                    names_n1 = char_indices_to_string(char_indices=non_padded_name)
-
-                    print("\n______________\n")
-                    print("name:", names_n1)
-
-                    print("predicted as:", predicted_class, "(" + str(round(certency * 100, 4)) + "%)")
-                    print("actual target:", target_class)
+                    try:
+                        # catch, if no value is above the threshold (if used)
+                        predicted_class = list(prediction).index(1)
+                        predicted_class = list(classes.keys())[list(classes.values()).index(predicted_class)]
+                    except:
+                        predicted_class = "unknowm"
+    
+                    if print_:
+                        names_n1 = char_indices_to_string(char_indices=non_padded_name)
+    
+                        print("\n______________\n")
+                        print("name:", names_n1)
+        
+                        print("predicted as:", predicted_class, "(" + str(round(certency * 100, 4)) + "%)")
+                        print("actual target:", target_class)
+            except:
+                pass
 
         precisions, recalls, f1_scores = scores
         print("\n\ntest accuracy:", accuracy)
@@ -236,26 +274,51 @@ class Run:
         print("\nf1-score of every class:", f1_scores)
 
 
-# TODO continue DONT CHANGE ANYTHING JUST RUN <-------
 
-run = Run(model_file="models/model2.pt",
-            dataset_path="../../datasets/preprocessed_datasets/final_more_matrix_name_list.pickle",
-            epochs=1,
+run = Run(model_file="models/model5.pt",
+            dataset_path="../../datasets/preprocessed_datasets/final_more_nationalities/matrix_name_list.pickle",
+            epochs=15,
             # hyperparameters
-            lr=0.00083,
-            batch_size=612,
+            lr=0.0035,
+            lr_schedule=(0.9875, 92),
+            batch_size=1000,
             threshold=0.4,
             hidden_size=200,
             layers=1,
             dropout_chance=0.5,
-            bidirectional=True,
+            bidirectional=False,
             embedding_size=200,
             n_gram=3,
-            continue_=True)     # <--------
+            augmentation=0.0,
+            continue_=False)
 
 
 run.train()
 run.test(print_=True)
+"""import pickle5 as pickle
 
+
+a = [0 for _ in range(22)]
+print(classes)
+with open("../../datasets/preprocessed_datasets/final_more_nationalities/matrix_name_list.pickle", "rb") as f:
+    dataset = pickle.load(f)
+
+test_size = val_size = 0.025
+test_size = int(np.round(len(dataset)*test_size))
+val_size = int(np.round(len(dataset)*val_size))
+
+train_set, test_set, validation_set = dataset[(test_size+val_size):], dataset[:test_size], dataset[test_size:(test_size+val_size)]
+
+r = 0
+g = 0
+for e in test_set:
+    #print(e[0] - 2)
+    if list(classes.keys())[list(classes.values()).index(e[0]-1)] == "russian":
+        r += 1
+    elif list(classes.keys())[list(classes.values()).index(e[0]-1)] == "german":
+        g += 1
+
+
+print(r, g)"""
 
 # conda deactivate && conda activate py37

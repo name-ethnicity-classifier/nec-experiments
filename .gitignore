@@ -1,6 +1,12 @@
-src/datasets/*
 .vscode/
 __pychache__/
-!src/datasets/create_ngram_table.py
-!src/datasets/bi_gram_table.json
+
 src/clustering/dataset/*
+
+*.model
+src/datasets/preprocessed_datasets/*
+src/datasets/raw_datasets/*
+src/datasets/unused_datasets/
+src/old-experiments/
+
+wandb*

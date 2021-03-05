@@ -11,7 +11,7 @@ from gensim.models import Word2Vec
 
 
 class NameEthnicityDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset: list=[], class_amount: int=10, augmentation: bool=False):
+    def __init__(self, dataset: list=[], class_amount: int=10, augmentation: float=0.0):
         """ constructor
 
         :param list dataset: dataset list
@@ -44,41 +44,52 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         else:
             return [int_representation]
 
-    def _augmentate(self, int_name: list) -> list:
-        """ augmentate name by either flipping sure- and prename or just by taking the surname
+    def _name_switch(self, org_name: list, class_: int, chance: float=0.3) -> list:
+        """ switches first and last name part of the name with a random name of the same nationality """
 
-        :paran list int_name: integer/index representation of the name
-        :return list: augmentated integer/index representation of the name
-        """
+        augmentation_choice = np.random.uniform(0.0, 1.0)
+        if chance < augmentation_choice:
+        
+            seperat_dataset = self.dataset.copy()
+            np.random.shuffle(seperat_dataset)
 
-        augmentation_choice = np.random.choice([1, 2, 3, 4, 5])
-
-        int_rep_prename, int_rep_surname = [], []
-        is_prename = True
-        for int_rep_char in int_name:
-
-            # check if the ineteger representates the space-symbol
-            if int_rep_char == 27:
-                is_prename = False
-                continue
-
-            if is_prename:
-                int_rep_prename.append(int_rep_char)
-            else:
-                int_rep_surname.append(int_rep_char)
-
-        # only surname
-        if augmentation_choice == 1:
-            return int_rep_surname
+            same_nat_name = []
+            for sample in seperat_dataset:
+                if class_ == sample[0]:
+                    same_nat_name = [e+1 for e in sample[1]]
                 
-        # flip surename with prename
-        elif augmentation_choice == 2:
-            return int_rep_surname + [27] + int_rep_prename
+                if 27 in same_nat_name:
+                    break
+            
+            org_prename, org_surname = self._split_name(org_name)
+            same_nat_prename, same_nat_surname = self._split_name(same_nat_name)
 
-        # return normale prename + surename
+            flip_case = np.random.choice([0, 1])
+
+            if flip_case == 0:
+                return org_prename + [27] + same_nat_surname
+
+            elif flip_case == 1:
+                return same_nat_prename + [27] + org_surname
+
         else:
-            return int_name
+            return org_name
 
+    def _split_name(self, int_name: list) -> list:
+        try:
+            str_index_name = "".join([str(e) + " " for e in int_name])
+            str_index_name_split = str_index_name.split("27", 1)
+
+            pre_int_name, sur_int_name = str_index_name_split[0], str_index_name_split[1]
+            pre_int_name = [int(e) for e in pre_int_name.split() if e.isdigit()]
+            sur_int_name = [int(e) for e in sur_int_name.split() if e.isdigit()]
+
+            return pre_int_name, sur_int_name
+            
+        except:
+            # the case, when the name is only one word (no first-/ sur-name)
+            return int_name, int_name
+ 
     def _create_n_gram(self, int_name: list, n: int=1) -> list:
         """ create n-gram sample from index representation
 
@@ -128,8 +139,8 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
 
         int_name = [e+1 for e in sample]
 
-        if self.augmentation:
-            int_name = self._augmentate(int_name)
+        if self.augmentation > 0.0:
+            int_name = self._name_switch(int_name, target, chance=self.augmentation)
 
         int_name_n1 = int_name
         int_name_n2 = self._create_n_gram(int_name, n=2)

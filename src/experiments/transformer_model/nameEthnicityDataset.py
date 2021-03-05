@@ -19,7 +19,7 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         :param int class_amount: amount of classes(/nationalities) in the dataset
         """
 
-        self.dataset = dataset
+        self.dataset = dataset  # test: [:1000]
         self.class_amount = class_amount
 
         self.augmentation = augmentation
@@ -133,9 +133,9 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         if self.augmentation:
             int_name = self._augmentate(int_name)
 
-        int_name_n1 = int_name
-        int_name_n2 = self._create_n_gram(int_name, n=2)
-        int_name_n3 = self._create_n_gram(int_name, n=3)
+        # int_name_n1 = int_name
+        # int_name_n2 = self._create_n_gram(int_name, n=2)
+        # int_name_n3 = self._create_n_gram(int_name, n=3)
 
         # int_name_n1 = [self.unigram_char2vec_embedder[str(i)] for i in int_name_n1]
         # int_name_n2 = [self.bigram_char2vec_embedder[str(i)] for i in int_name_n2]
@@ -153,7 +153,8 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         elif len(self.n_gram) == 2:
             int_name_n1 = int_name
             int_name_n2 = self._create_n_gram(int_name, n=2)
-            return torch.Tensor(int_name_n1), torch.Tensor(int_name_n2), torch.Tensor(target).type(torch.LongTensor), non_padded_sample
+            # return torch.Tensor(int_name_n1), torch.Tensor(int_name_n2), torch.Tensor(target).type(torch.LongTensor), non_padded_sample
+            return torch.Tensor(int_name_n2), torch.Tensor(target).type(torch.LongTensor), non_padded_sample
 
         elif len(self.n_gram) == 3:
             int_name_n1 = int_name

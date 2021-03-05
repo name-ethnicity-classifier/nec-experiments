@@ -11,10 +11,10 @@ import string
 
 import sys
 # insert at 1, 0 is for other usage
-sys.path.insert(1, 'src/')
+sys.path.insert(1, 'src/paper2017_implementation/')
 
-from src.model import Model
-from src.utils import onehot_to_string, string_to_onehot, char_indices_to_string, create_dataloader
+from src.paper2017_implementation.model import TripleNGramLSTM as Model
+from src.paper2017_implementation.utils import onehot_to_string, string_to_onehot, char_indices_to_string, create_dataloader
 
 
 # check if nvidia GPU is available, if not, use CPU
@@ -96,7 +96,7 @@ def predict(input_batch, model_path: str="", classes: dict={}) -> str:
     """
 
     # prepare model (map model-file content from gpu to cpu if necessary)
-    model = Model(class_amount=len(classes), hidden_size=256, layers=2, embedding_size=128).to(device=device)
+    model = Model(class_amount=len(classes), hidden_size=200, layers=1, embedding_size=200).to(device=device)
     if device != "cuda:0":
         model.load_state_dict(torch.load(model_path, map_location={'cuda:0': 'cpu'}))
     else:
@@ -122,13 +122,13 @@ if __name__ == "__main__":
     names, csv_out_path = console_parser()
 
     # get dictionary of classes
-    with open("src/datasets/preprocessed_datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f)
+    with open("src/datasets/preprocessed_datasets/final_more_nationality_to_number_dict.json", "r") as f: classes = json.load(f)
 
     # preprocess inputs
     input_batch = preprocess_names(names=names)
     
     # predict ethnicities
-    ethnicities = predict(input_batch, model_path="src/models/model8.pt", classes=classes)
+    ethnicities = predict(input_batch, model_path="src/paper2017_implementation/models/model1.pt", classes=classes)
 
     # check if the -c/--csv flag was set, by checking if there is a csv-save-file, if so: save names with their ethnicities
     if len(csv_out_path) > 0:

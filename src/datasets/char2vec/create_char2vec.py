@@ -143,21 +143,24 @@ def project_embedding(model_file: str="", n: int=1):
 
 
 if __name__ == "__main__":
-    with open("../preprocessed_datasets/index_final_matrix_name_list.pickle", "rb") as f:
+    with open("../preprocessed_datasets/final_more_nationalities/matrix_name_list.pickle", "rb") as f:
         dataset = pickle.load(f)
-
+        print(len(dataset))
+        print(len(dataset) / 23)
     # train embeddings only on train-dataset, split in same way as in the normal training
     test_size = int(np.round(len(dataset)*0.025))
+    print(test_size)
     val_size = int(np.round(len(dataset)*0.025))
+    print(val_size)
     dataset = dataset[(test_size+val_size):]
-
-
-    """ uni-gram char2vec """
+    print(len(dataset))
+    
+    """ uni-gram char2vec 
     corpus = preprocess(dataset)
     char2vec(corpus=corpus, model_file="./gensim_unigram_model.model")
     embedder = load_gensim_model(model_file="./gensim_unigram_model.model")
     project_embedding(model_file="./gensim_unigram_model.model")
-    
+    """
 
     """ bi-gram char2vec
     corpus = preprocess(dataset, ngram=2)

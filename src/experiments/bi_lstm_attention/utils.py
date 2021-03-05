@@ -60,7 +60,7 @@ def custom_collate(batch):
 
 
 def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: float=0.01, batch_size: int=32, class_amount: int=10, \
-                                                                            augmentation: bool=False):
+                                                                            augmentation: float=0.0):
     """ create three dataloader (train, test, validation)
 
     :param str dataset_path: path to dataset
@@ -78,20 +78,20 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     train_set, test_set, validation_set = dataset[(test_size+val_size):], dataset[:test_size], dataset[test_size:(test_size+val_size)]
 
     train_set = NameEthnicityDataset(dataset=train_set, class_amount=class_amount, augmentation=augmentation)
-    test_set = NameEthnicityDataset(dataset=test_set, class_amount=class_amount, augmentation=False)
-    val_set = NameEthnicityDataset(dataset=validation_set, class_amount=class_amount, augmentation=False)
+    test_set = NameEthnicityDataset(dataset=test_set, class_amount=class_amount)
+    val_set = NameEthnicityDataset(dataset=validation_set, class_amount=class_amount)
 
     train_dataloader = torch.utils.data.DataLoader(
         train_set,
         batch_size=batch_size,
-        num_workers=1,
+        num_workers=0,
         shuffle=True,
         collate_fn=custom_collate
     )
     val_dataloader = torch.utils.data.DataLoader(
         val_set,
         batch_size=int(batch_size),
-        num_workers=1,
+        num_workers=0,
         shuffle=True,
         collate_fn=custom_collate
 
@@ -99,7 +99,7 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     test_dataloader = torch.utils.data.DataLoader(
         test_set,
         batch_size=int(batch_size),
-        num_workers=1,
+        num_workers=0,
         shuffle=True,
         collate_fn=custom_collate
     )
@@ -124,6 +124,22 @@ def show_progress(epochs: int, epoch: int, train_loss: float, train_accuracy: fl
     val_loss = colored(round(val_loss, 6), "cyan", attrs=["bold"])
     
     print("epoch {} train_loss: {} - train_acc: {} - val_loss: {} - val_acc: {}".format(epochs, train_loss, train_accuracy, val_loss, val_accuracy), "\n")
+
+
+
+def lr_scheduler(optimizer: torch.optim, current_iteration: int=0, warmup_iterations: int=0, lr_end: float=0.001, decay_rate: float=0.99, decay_intervall: int=100) -> None:
+    current_iteration += 1
+    current_lr = optimizer.param_groups[0]["lr"]
+
+    if current_iteration <= warmup_iterations:
+        optimizer.param_groups[0]["lr"] = (current_iteration * lr_end) / warmup_iterations
+        # print(" WARMUP", optimizer.param_groups[0]["lr"])
+
+    elif current_iteration > warmup_iterations and current_iteration % decay_intervall == 0:
+        optimizer.param_groups[0]["lr"] = current_lr * decay_rate
+        # print(" DECAY", optimizer.param_groups[0]["lr"])
+    else:
+        pass
 
 
 def onehot_to_string(one_hot_name: list=[]) -> str:

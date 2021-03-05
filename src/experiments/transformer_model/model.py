@@ -42,36 +42,41 @@ class TransformerModel(nn.Module):
         self.num_layers = num_layers
         self.dropout_chance = dropout_chance
 
-        vocab_size = pow(26, 3) + 2
+        vocab_size = pow(26, 1) + 3
         self.embedding_size = embedding_size
         self.embed = nn.Embedding(vocab_size, self.embedding_size)
         self.pe = PositionalEncoder(self.embedding_size)
 
-        self.encoder_layer = nn.TransformerEncoderLayer(self.embedding_size, nhead=self.num_heads, dropout=self.dropout_chance)
+        self.encoder_layer = nn.TransformerEncoderLayer(self.embedding_size, nhead=self.num_heads, dropout=0.025)
         self.transformer_encoder = nn.TransformerEncoder(self.encoder_layer, num_layers=self.num_layers)
 
         self.linear1 = nn.Linear(self.embedding_size, self.embedding_size // 2)
-        self.dropout1 = nn.Dropout2d(p=self.dropout_chance / 2)
+        self.dropout1 = nn.Dropout2d(p=self.dropout_chance)
 
         self.linear2 = nn.Linear(self.embedding_size // 2, class_amount)
 
-        self.logSoftmax = nn.LogSoftmax(dim=1) 
-        
-    def forward(self, x):
-        mask = (x == 0).cuda()
+        self.logSoftmax = nn.LogSoftmax(dim=1)
+
+    def _create_padding_mask(self, x: torch.tensor) -> torch.tensor:
+        mask = (x == 0).cuda().reshape(x.shape[1], x.shape[0])
+        # mask = mask.masked_fill(mask == True, float('-inf')).masked_fill(mask == False, float(0.0))
+        return mask
+
+    def forward(self, x: torch.tensor) -> torch.tensor:
+        mask = self._create_padding_mask(x)
 
         # embedding layer
         x = self.embed(x.type(torch.LongTensor).to(device=device))
         x = self.pe(x)
 
         # multi-head-attention layer
-        x = self.transformer_encoder(x)
-        x = x.reshape(x.size(0), x.size(1), self.embedding_size)
-        
+        x = self.transformer_encoder(x, src_key_padding_mask=mask)
+        x[x != x] = 0.0
+
         x = x.mean(1)
 
-        x = F.gelu(self.linear1(x))
-        x = self.dropout1(x)
+        x = F.relu(self.linear1(x))
+        #x = self.dropout1(x)
         x = self.logSoftmax(self.linear2(x))
 
         return x

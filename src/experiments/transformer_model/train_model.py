@@ -15,20 +15,20 @@ from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
 from model import TransformerModel as Model
 # from model import Model
-from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string
+from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string, lr_scheduler
 from test_metrics import validate_accuracy, create_confusion_matrix, recall, precision, f1_score, score_plot
 import xman
-
+import wandb
 
 torch.manual_seed(0)
 
 
-with open("../../datasets/preprocessed_datasets/final_more_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
+with open("../../datasets/preprocessed_datasets/final_more_nationalities/nationality_classes.json", "r") as f: classes = json.load(f) 
 total_classes = len(classes)
 
 
 class Run:
-    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, lr_warmup: Tuple[float]=(0.00001, 0.001, 1.05), \
+    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, lr_warmup_iterations: int=0, \
                         lr_decay: Tuple[float]=(100, 0.99), batch_size: int=32, threshold: float=0.5, num_heads: int=10, num_layers: int=1, dropout_chance: float=0.5, \
                         embedding_size: int=64, n_gram: List[int]=[1], continue_: bool=False):
 
@@ -41,19 +41,11 @@ class Run:
         self.batch_size = batch_size
         self.threshold = threshold
 
-        # initial learning rate
+        # learning rate parameters
         self.lr = lr
-
-        # warmup parameters
-        self.lr_warmup_intervall = lr_warmup[0]
-        self.lr_warmup_end = lr_warmup[1]
-        self.lr_warmup_factor = lr_warmup[2]
-        self.do_lr_warmup = lr_warmup[3]
-
-        # decay parameters
+        self.lr_warmup_iterations = lr_warmup_iterations
         self.lr_decay_intervall = lr_decay[0]
         self.lr_decay_factor = lr_decay[1]
-        self.do_lr_decay = lr_decay[2]
 
         # model parameters
         self.num_heads = num_heads 
@@ -63,29 +55,48 @@ class Run:
         self.n_gram = n_gram
 
         # dataloaders
-        self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.025, val_size=0.025, \
+        self.train_set, self.validation_set, self.test_set = create_dataloader(dataset_path=self.dataset_path, test_size=0.05, val_size=0.05, \
                                     batch_size=batch_size, class_amount=total_classes, augmentation=False, n_gram=self.n_gram)
 
         # continue training or not
         self.continue_ = continue_
 
-        # initialize experiment manager (uncomment if you have the xman libary installed)
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment1", continue_=self.continue_)
+        self.config = {
+                        "optimizer": "Adam",
+                        "loss-function": "NLLLoss",
+                        "batch-size": self.batch_size,
+                        "init-learning-rate": 0.003,
+                        "lr-warmup-steps": self.lr_warmup_iterations,
+                        "decay-rate": self.lr_decay_factor,
+                        "decay-intervall": self.lr_decay_intervall,
+                        "num-heads": self.num_heads, 
+                        "transformer-layers": self.num_layers, 
+                        "dropout-chance": self.dropout_chance,
+                        "embedding-size": self.embedding_size, 
+                        "dense-layer-1": "relu",
+                        "ngram": len(self.n_gram)
+                        }
+
+
+        # initialize experiment manager
+        self.xmanager = xman.ExperimentManager(experiment_name="experiment3_6layer_transformer", continue_=self.continue_)
         self.xmanager.init(optimizer="Adam", 
                             loss_function="NLLLoss", 
                             epochs=self.epochs, 
                             learning_rate=self.lr, 
                             batch_size=self.batch_size,
-                            custom_parameters={ 
-                                "transformer": True, 
+                            custom_parameters={
+                                "init-learning-rate": 0.003,
+                                "lr-warmup-steps": self.lr_warmup_iterations,
+                                "decay-rate": self.lr_decay_factor,
+                                "decay-intervall": self.lr_decay_intervall,
                                 "num-heads": self.num_heads, 
-                                "num-layers": self.num_layers, 
+                                "transformer-layers": self.num_layers, 
                                 "dropout-chance": self.dropout_chance,
                                 "embedding-size": self.embedding_size, 
-                                "dense-layer-1": "gelu",
-                                "dense-layer-2": "logsoftmax",
-                                "triple-ngram": False
-                            })
+                                "dense-layer-1": "relu",
+                                "ngram": len(self.n_gram)})
+
 
     def _validate(self, model, dataset, confusion_matrix: bool=False, plot_scores: bool=False):
         validation_dataset = dataset
@@ -132,12 +143,16 @@ class Run:
         return loss, accuracy, (precision_scores, recall_scores, f1_scores)
 
     def train(self):
+        wandb.init(project="name-ethnicity-classification", entity="theodorp", resume=self.continue_, config=self.config)
+
         model = Model(class_amount=total_classes, num_heads=self.num_heads, num_layers=self.num_layers, dropout_chance=self.dropout_chance, embedding_size=self.embedding_size).to(device=device)
         if self.continue_:
             model.load_state_dict(torch.load(self.model_file))
 
+        wandb.watch(model)
+
         criterion = nn.NLLLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, betas=(0.9, 0.98), weight_decay=1e-9)
+        optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, betas=(0.9, 0.98))     #, weight_decay=1e-6)
 
         iterations = 0
         train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
@@ -151,9 +166,11 @@ class Run:
                 names_n1 = names_n1.to(device=device)
                 targets = targets.to(device=device)
                 predictions = model.train()(names_n1)
-
+                
                 loss = criterion(predictions, targets.squeeze())
                 loss.backward()
+
+                lr_scheduler(optimizer, current_iteration=iterations, warmup_iterations=self.lr_warmup_iterations, lr_end=self.lr, decay_rate=self.lr_decay_factor, decay_intervall=self.lr_decay_intervall)
                 optimizer.step()
 
                 # log train loss
@@ -168,21 +185,6 @@ class Run:
                 
                 iterations += 1
 
-                # stop warmup when wanted lr is reached
-                if optimizer.param_groups[0]["lr"] >= self.lr_warmup_end:
-                    self.do_lr_warmup = False
-
-                # warm up training by increasing the learning rate
-                if iterations % self.lr_warmup_intervall == 0 and optimizer.param_groups[0]["lr"] < self.lr_warmup_end and self.do_lr_warmup == True:
-                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * self.lr_warmup_factor
-                    print("\nwarum-up to: {0:f}".format(optimizer.param_groups[0]["lr"]))
-
-                # decay when warmup is finished
-                if iterations % self.lr_decay_intervall == 0 and self.do_lr_warmup == False and self.do_lr_decay:
-                    optimizer.param_groups[0]["lr"] = optimizer.param_groups[0]["lr"] * self.lr_decay_factor
-                    print("\ndecay to: {0:f}".format(optimizer.param_groups[0]["lr"]))
-
-
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
             epoch_train_accuracy = validate_accuracy(total_train_targets, total_train_predictions, threshold=self.threshold)
@@ -196,7 +198,9 @@ class Run:
 
             # print training stats in pretty format
             show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy)
-            print("\nlr: ", optimizer.param_groups[0]["lr"], "\n")
+            print("\nlr: {}".format(optimizer.param_groups[0]["lr"]))
+
+            wandb.log({"validation-accuracy": epoch_val_accuracy, "validation-loss": epoch_val_loss, "train-accuracy": epoch_train_accuracy, "train-loss": epoch_train_loss})
 
             # save checkpoint of model
             torch.save(model.state_dict(), self.model_file)
@@ -214,7 +218,7 @@ class Run:
         _, accuracy, scores = self._validate(model, self.test_set, confusion_matrix=True, plot_scores=True)
         print("\n\ntest accuracy:", accuracy)
 
-        for names_n1, targets, non_padded_names in tqdm(self.test_set, desc="epoch", ncols=150):
+        for names_n1, targets, non_padded_names in tqdm(self.test_set, ncols=150):
             names_n1 = names_n1.to(device=device)
             targets = targets.to(device=device)
 
@@ -222,38 +226,41 @@ class Run:
             predictions, targets, names_n1 = predictions.cpu().detach().numpy(), targets.cpu().detach().numpy(), names_n1.cpu().detach().numpy()
 
             for idx in range(len(names_n1)):
-                names_n1, prediction, target, non_padded_name = names_n1[idx], predictions[idx], targets[idx], non_padded_names[idx]
-
-                # convert to one-hot target
-                amount_classes = prediction.shape[0]
-                target_empty = np.zeros((amount_classes))
-                target_empty[target] = 1
-                target = target_empty
-
-                # convert log-softmax to one-hot
-                prediction = list(np.exp(prediction))
-                certency = np.max(prediction)
-
-                prediction = [1 if e == certency else 0 for e in prediction]
-
-                target_class = list(target).index(1)
-                target_class = list(classes.keys())[list(classes.values()).index(target_class)]
-
                 try:
-                    # catch, if no value is above the threshold (if used)
-                    predicted_class = list(prediction).index(1)
-                    predicted_class = list(classes.keys())[list(classes.values()).index(predicted_class)]
+                    names_n1, prediction, target, non_padded_name = names_n1[idx], predictions[idx], targets[idx], non_padded_names[idx]
+
+                    # convert to one-hot target
+                    amount_classes = prediction.shape[0]
+                    target_empty = np.zeros((amount_classes))
+                    target_empty[target] = 1
+                    target = target_empty
+
+                    # convert log-softmax to one-hot
+                    prediction = list(np.exp(prediction))
+                    certency = np.max(prediction)
+
+                    prediction = [1 if e == certency else 0 for e in prediction]
+
+                    target_class = list(target).index(1)
+                    target_class = list(classes.keys())[list(classes.values()).index(target_class)]
+
+                    try:
+                        # catch, if no value is above the threshold (if used)
+                        predicted_class = list(prediction).index(1)
+                        predicted_class = list(classes.keys())[list(classes.values()).index(predicted_class)]
+                    except:
+                        predicted_class = "unknowm"
+
+                    if print_:
+                        names_n1 = char_indices_to_string(char_indices=non_padded_name)
+
+                        print("\n______________\n")
+                        print("name:", names_n1)
+
+                        print("predicted as:", predicted_class, "(" + str(round(certency * 100, 4)) + "%)")
+                        print("actual target:", target_class)
                 except:
-                    predicted_class = "unknowm"
-
-                if print_:
-                    names_n1 = char_indices_to_string(char_indices=non_padded_name)
-
-                    print("\n______________\n")
-                    print("name:", names_n1)
-
-                    print("predicted as:", predicted_class, "(" + str(round(certency * 100, 4)) + "%)")
-                    print("actual target:", target_class)
+                    pass
 
         precisions, recalls, f1_scores = scores
         print("\n\ntest accuracy:", accuracy)
@@ -263,19 +270,19 @@ class Run:
 
 
 
-run = Run(model_file="models/model1.pt",
-            dataset_path="../../datasets/preprocessed_datasets/final_more_matrix_name_list.pickle",
-            epochs=2,
+run = Run(model_file="models/model3.pt",
+            dataset_path="../../datasets/preprocessed_datasets/final_more_nationalities/matrix_name_list.pickle",
+            epochs=10,
             # hyperparameters
-            lr=0.00001,
-            lr_warmup=(100, 0.0025, 1.025, True),
-            lr_decay=(100, 0.985, True),
-            batch_size=512,
+            lr=0.0035,
+            lr_warmup_iterations=500,
+            lr_decay=(95, 0.9875),
+            batch_size=300,
             threshold=0.4,
-            num_heads=5,
-            num_layers=8,
-            dropout_chance=0.5,
-            embedding_size=200,
+            num_heads=1,
+            num_layers=3,
+            dropout_chance=0.2,
+            embedding_size=300,
             n_gram=[1],
             continue_=False)
 

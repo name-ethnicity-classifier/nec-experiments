@@ -1,0 +1,28 @@
+{
+    "hyperparameters": {
+        "optimizer": "Adam",
+        "loss-function": "NLLLoss",
+        "epochs": 1,
+        "learning-rate": [
+            0.0035
+        ],
+        "batch-size": [
+            300
+        ],
+        "hidden-size": 200,
+        "layers": 1,
+        "attention-heads": 1,
+        "dropout-chance": 0.3,
+        "embedding-size": 200,
+        "dense-layer-1": "logsoftmax",
+        "bi-directional": false,
+        "triple-ngram": true,
+        "augmentation-chance": 0.1
+    },
+    "results": {
+        "train-accuracy": [],
+        "train-loss": [],
+        "validation-accuracy": [],
+        "validation-loss": []
+    }
+}

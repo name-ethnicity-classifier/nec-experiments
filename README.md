@@ -119,19 +119,3 @@ With PCA the high-dimensional outputs embeddings get projected into 3d space.
 - nationalities with a very specific name-type (like chinese) have more dense clusters and/or are more distant from the middle
 
 
-
-
-
-
-
-
-
-
-
-Dear Prof. Ph.D. Jinhyuk Lee
-
-As part of a social science paper, we are working on a similar task for the classification of name nationalities as you and your colleagues published in 2017. 
-Since the technical part of our work will be similar to yours, we have implemented your architecture and are trying to replicate your results. Although we seem to have a much larger data set, it seems impossible to achieve an accuracy of ~82% for 127 countries. Since many of the nationalities you selected speak the same language and the amount of classes seem to be quite many for such a classification task, we wanted to ask you if we understood you correctly: Your team trained the model on the 127 nationalities (which are represented here: https://github.com/jhyuklee/ethnicity-tensorflow/blob/master/data/cleaned/country_to_idx.txt) and achieved an accuracy of 82? We would be grateful if you could perhaps give us some important hints and tips to increase our model to your achieved performance.
-
-With best regards,
-Theodor Peifer

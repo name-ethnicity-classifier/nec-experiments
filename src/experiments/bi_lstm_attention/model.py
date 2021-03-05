@@ -11,9 +11,6 @@ from utils import device, onehot_to_string
 
 
 
-""" N-GRAM LSTM """
-
-
 class SingleLstm(nn.Module):
     def __init__(self, hidden_size: int=10, layers: int=2, dropout_chance: float=0.5, bidirectional: bool=False, embedding_size: int=64):
         super(SingleLstm, self).__init__()
@@ -55,36 +52,38 @@ class TripleNGramLSTM(nn.Module):
         self.lstm_n2 = SingleLstm(self.hidden_size, self.layers, self.lstm_dropout_chance, self.bidirectional, self.embedding_size)
         self.lstm_n3 = SingleLstm(self.hidden_size, self.layers, self.lstm_dropout_chance, self.bidirectional, self.embedding_size)
 
-        self.attention1 = nn.MultiheadAttention(self.hidden_size * self.directions, num_heads=1, dropout=0.35)
-        self.attention2 = nn.MultiheadAttention(self.hidden_size * self.directions, num_heads=1, dropout=0.35)
-        self.attention3 = nn.MultiheadAttention(self.hidden_size * self.directions, num_heads=1, dropout=0.35)
+        self.attention1 = nn.MultiheadAttention(self.hidden_size * self.directions, num_heads=1, dropout=0.15)
+        self.attention2 = nn.MultiheadAttention(self.hidden_size * self.directions, num_heads=1, dropout=0.15)
+        self.attention3 = nn.MultiheadAttention(self.hidden_size * self.directions, num_heads=1, dropout=0.15)
 
         self.dropout = nn.Dropout2d(p=self.dropout_chance)
-        self.linear1 = nn.Linear(self.hidden_size * 3 * self.directions, 200 * self.directions)
-        self.linear2 = nn.Linear(200 * self.directions, class_amount)
+        #self.linear1 = nn.Linear(self.hidden_size * 3 * self.directions, 200 * self.directions)
+        #self.linear2 = nn.Linear(200 * self.directions, class_amount)
+        #self.linear1 = nn.Linear(self.hidden_size * 3 * self.directions, 200 * self.directions)
+        self.linear1 = nn.Linear(self.hidden_size * 3 * self.directions, class_amount)
 
         self.logSoftmax = nn.LogSoftmax(dim=1) 
 
     def forward(self, x_n1, x_n2, x_n3):
-        x_n1 = self.embedder(x_n1.type(torch.LongTensor).to(device=device)).reshape(x_n1.size(0), x_n1.size(1), self.embedding_size)
-        x_n2 = self.embedder(x_n2.type(torch.LongTensor).to(device=device)).reshape(x_n2.size(0), x_n2.size(1), self.embedding_size)
-        x_n3 = self.embedder(x_n3.type(torch.LongTensor).to(device=device)).reshape(x_n3.size(0), x_n3.size(1), self.embedding_size)
+        x_n1 = self.embedder(x_n1.type(torch.LongTensor).to(device=device)).squeeze()#.transpose(0, 1)# .reshape(x_n1.size(0), x_n1.size(1), self.embedding_size)
+        x_n2 = self.embedder(x_n2.type(torch.LongTensor).to(device=device)).squeeze()#.transpose(0, 1)# .reshape(x_n2.size(0), x_n2.size(1), self.embedding_size)
+        x_n3 = self.embedder(x_n3.type(torch.LongTensor).to(device=device)).squeeze()#.transpose(0, 1)# .reshape(x_n3.size(0), x_n3.size(1), self.embedding_size)
 
-        x_n1 = self.lstm_n1(x_n1)#.reshape(x_n1.size(0), x_n1.size(1), self.hidden_size * self.directions)
-        x_n2 = self.lstm_n2(x_n2)#.reshape(x_n1.size(0), self.hidden_size * self.directions)
-        x_n3 = self.lstm_n3(x_n3)#.reshape(x_n1.size(0), self.hidden_size * self.directions)
+        x_n1 = self.lstm_n1(x_n1)   #.reshape(x_n1.size(0), x_n1.size(1), self.hidden_size * self.directions)
+        x_n2 = self.lstm_n2(x_n2)   #.reshape(x_n1.size(0), self.hidden_size * self.directions)
+        x_n3 = self.lstm_n3(x_n3)   #.reshape(x_n1.size(0), self.hidden_size * self.directions)
         
-        x_n1_last = x_n1[:, -1]
-        x_n2_last = x_n2[:, -1]
-        x_n3_last = x_n3[:, -1]
+        #x_n1_last = x_n1[:, -1]
+        #x_n2_last = x_n2[:, -1]
+        #x_n3_last = x_n3[:, -1]
+        
+        x_n1 = self.attention1(x_n1, x_n1, x_n1)[0]# + x_n1
+        x_n2 = self.attention2(x_n2, x_n2, x_n2)[0]# + x_n2
+        x_n3 = self.attention3(x_n3, x_n3, x_n3)[0]# + x_n3
 
-        x_n1, _ = self.attention1(x_n1, x_n1, x_n1)
-        x_n2, _ = self.attention2(x_n2, x_n2, x_n2)
-        x_n3, _ = self.attention3(x_n3, x_n3, x_n3)
-
-        x_n1 = x_n1.mean(1) + x_n1_last
-        x_n2 = x_n2.mean(1) + x_n2_last
-        x_n3 = x_n3.mean(1) + x_n3_last
+        x_n1 = x_n1[:, -1]#.mean(1)     # + x_n1_last
+        x_n2 = x_n2[:, -1]#.mean(1)     # + x_n2_last
+        x_n3 = x_n3[:, -1]#.mean(1)     # + x_n3_last
 
         x = torch.cat((x_n1, x_n2, x_n3), -1)
 
@@ -92,8 +91,8 @@ class TripleNGramLSTM(nn.Module):
         # x, _ = self.attention(x, x, x)
         # x = x.mean(1)
 
-        x = F.relu(self.linear1(x))
+        #x = F.relu(self.linear1(x))
 
-        x = self.logSoftmax(self.linear2(x))
+        x = self.logSoftmax(self.linear1(x))
 
         return x

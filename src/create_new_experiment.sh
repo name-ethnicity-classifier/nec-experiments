@@ -19,4 +19,4 @@ if [ "$1" != "-n" ] && [ "$1" != "--name" ]; then
 fi
 
 # finally create new experiment environment
-cp -r experiments/template_experiment experiments/$2
+cp -r experiments/bi_lstm_attention experiments/$2
