@@ -4,10 +4,7 @@ import argparse
 
 
 model_config = {
-    # name of the file the model will be saved and read from
-    "model-file": "my_model.pt",
-
-    # name of the model/experiment in general (choose descriptive name)
+    # name of the model/experiment in general (choose descriptive name, the .pt file will have the same name and store the parameters of the model)
     "model-name": "my_model",
 
     # path to the dataset folder (must contain "matrix_name_list.pickle" and "nationality_classes.json" and be stored in "../datasets/preprocessed_datasets/")

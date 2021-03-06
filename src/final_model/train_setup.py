@@ -13,7 +13,7 @@ import torch.utils.data
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
-from model import CnnLSTM as Model
+from model import ConvLSTM as Model
 from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string, lr_scheduler
 from test_metrics import validate_accuracy, create_confusion_matrix, recall, precision, f1_score, score_plot
 import xman
@@ -29,8 +29,8 @@ class TrainSetup:
         self.model_config = model_config
 
         # model file and name
-        self.model_file = "models/" + model_config["model-file"]
         self.model_name = model_config["model-name"]
+        self.model_file = "models/" + model_config["model-name"] + ".pt"
 
         # dataset parameters
         self.dataset_name = "../datasets/preprocessed_datasets//" + model_config["dataset-name"]

@@ -1,33 +1,26 @@
 # name ethnicity classification
 
-## this project uses a LSTM to assign ethnicities to names
+## this project assigns ethnicities to names
 
-## | currently distinguishes between these 10 countries:
-```json
-{
-    "british": 0, "else": 1, "indian": 2, "hungarian": 3,
-    "spanish": 4, "german": 5, "zimbabwean": 6, "polish": 7, 
-    "bulgarian": 8, "turkish": 9, "pakistani": 10, "italian": 11,
-    "romanian": 12, "french": 13, "chinese": 14, "swedish": 15,
-    "nigerian": 16, "greek": 17, "japanese": 18, "dutch": 19,
-    "ukrainian": 20, "danish": 21, "russian": 22
-}
-```
 
 ## | installation:
-```bash
-git clone https://github.com/hollowcodes/name-ethnicity-classification.git
-cd name-ethnicity-classification/
-pip install -r requirements.txt
-```
+- prerequisites: python-3.7, conda environment recommended
+- steps:
+    ```bash
+    git clone https://github.com/hollowcodes/name-ethnicity-classification.git
+    cd name-ethnicity-classification/
+    pip install -r requirements.txt
+    ```
 
 ## | usage:
- - ### predicting one name:
-    ```
-    python3 predict_ethnicitiy.py -n "Gonzalo Rodriguez" (upper-/ lower-case doesn't matter)
 
-    >> name: Gonzalo Rodriguez - predicted ethnicity: spanish
-    ```
+ - ### training (since the dataset is private training is only possible for the authors):
+    
+    1. configure the wanted nationalities using  ```src/preprocessing.py``` or add the dataset to ```src/datasets/preprocessed_datasets/``` (this folder must then contain one file called ```matrix_name_list.pickle``` and ```nationality_classes.json```)
+
+    2. navigate to ```src/final_model```
+    3. edit ```train_model.py``` by specifing the dataset folder name, a descriptive name for the experiment/run
+    4. run ```train_model.py```
 
  - ### predicting multiple names and save the output
     ```
@@ -52,7 +45,12 @@ pip install -r requirements.txt
 
     If the output file doesn't exist, it will be created.
 
+ - ### predicting one name:
+    ```
+    python3 predict_ethnicitiy.py -n "Gonzalo Rodriguez" (upper-/ lower-case doesn't matter)
 
+    >> name: Gonzalo Rodriguez - predicted ethnicity: spanish
+    ```
 
 ## | results:
 

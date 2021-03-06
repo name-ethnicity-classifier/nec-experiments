@@ -7,14 +7,14 @@ import numpy as np
 import math
 from gensim.models import Word2Vec
 
-from utils import device, onehot_to_string
+from utils import device
 
 
 
 
-class CnnLSTM(nn.Module):
+class ConvLSTM(nn.Module):
     def __init__(self, class_amount: int=0, embedding_size: int=64, hidden_size: int=10, layers: int=1, dropout_chance: float=0.5, kernel_size: int=3, channels: list=[32, 64, 128]):
-        super(CnnLSTM, self).__init__()
+        super(ConvLSTM, self).__init__()
 
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
@@ -44,7 +44,7 @@ class CnnLSTM(nn.Module):
 
     def forward(self, x):
         x = self.embedder(x.type(torch.LongTensor).to(device=device))
-        x = x.squeeze().transpose(1, 2)
+        x = x.squeeze(2).transpose(1, 2)
 
         x = self.conv1(x)
         # x = self.conv2(x)
