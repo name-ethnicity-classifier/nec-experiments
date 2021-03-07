@@ -94,10 +94,11 @@ def get_flags() -> Union[list, str, str, int, str]:
     return names, csv_out_path, model_config_folder, batch_size, device
 
 
-def preprocess_names(names: list=[str]) -> torch.tensor:
+def preprocess_names(names: list=[str], batch_size: int=128) -> torch.tensor:
     """ create a pytorch-usable input-batch from a list of string-names
     
     :param list names: list of names (strings)
+    :param int batch_size: batch-size for the forward pass
     :return torch.tensor: preprocessed names (to tensors, padded, encoded)
     """
 
@@ -118,15 +119,20 @@ def preprocess_names(names: list=[str]) -> torch.tensor:
     padded_to = list(padded_batch.size())[1]
     padded_batch = padded_batch.reshape(len(sample_batch), padded_to, 1).to(device=device)
 
-    return padded_batch
+    if padded_batch.shape[0] == 1 or batch_size == padded_batch.shape[0]:
+        padded_batch = padded_batch.unsqueeze(0)
+    else:
+        padded_batch = torch.split(padded_batch, batch_size)
 
-def predict(input_batch: torch.tensor, model_conifg: dict, batch_size: int=128) -> str:
+    return padded_batch
+    
+
+def predict(input_batch: torch.tensor, model_conifg: dict) -> str:
     """ load model and predict preprocessed name
 
     :param torch.tensor input_batch: input-batch
     :param str model_path: path to saved model-paramters
     :param dict classes: a dictionary containing all countries with their class-number
-    :param int batch_size: batch-size for the forward pass
     :return str: predicted ethnicities
     """
 
@@ -143,19 +149,15 @@ def predict(input_batch: torch.tensor, model_conifg: dict, batch_size: int=128) 
     model_path = model_conifg["model-file"]
 
     if device != "cuda:0":
-        model.load_state_dict(torch.load(model_path, map_location={'cuda:0': 'cpu'}))
+        model.load_state_dict(torch.load(model_path, map_location={"cuda:0": "cpu"}))
     else:
         model.load_state_dict(torch.load(model_path))
 
     model = model.eval()
 
-    # classify names
-    if input_batch.shape[0] == 1:
-        input_batch.unsqueeze(0)
-    if batch_size != input_batch.shape[0]:
-        input_batch = torch.split(input_batch, batch_size)
-    
+    # classify names    
     total_predicted_ethncitities = []
+
     for batch in input_batch:
         predictions = model(batch.float())
 
@@ -182,7 +184,7 @@ if __name__ == "__main__":
     model_file = model_config_folder + "/model.pt"
 
     # preprocess inputs
-    input_batch = preprocess_names(names=names)
+    input_batch = preprocess_names(names=names, batch_size=batch_size)
     
     model_config = {
         "model-file": model_file,
@@ -194,7 +196,7 @@ if __name__ == "__main__":
     }
 
     # predict ethnicities
-    ethnicities = predict(input_batch, model_config, batch_size=batch_size)
+    ethnicities = predict(input_batch, model_config)
 
     # check if the -i/--input and -o/--output flag was set, by checking if there is a csv-save-file, if so: save names with their ethnicities
     if csv_out_path != None:
@@ -205,11 +207,11 @@ if __name__ == "__main__":
         open(csv_out_path, "w+").close()
         df.to_csv(csv_out_path, index=False)
     
-        print("\nclassified all names and saved to {} .".format(csv_out_path))
+        print("\nclassified all names and saved to {} .\n".format(csv_out_path))
     
     # if a single name was parsed using -n/--name, print the predicition
     else:
-        print("\nname:", names[0], "- predicted ethnicity:", ethnicities[0])
+        print("\nname: {} - predicted ethnicity: {}".format(names[0], ethnicities[0]))
 
 
 

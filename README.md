@@ -1,7 +1,7 @@
 # name ethnicity classification
 
 ## | installation:
-#
+
 - prerequisites: python-3.7, conda environment recommended
 - steps:
     ```
@@ -12,11 +12,7 @@
     pip install -r requirements.txt
     ```
 
-<br><br/>
-
 ## | usage:
-
-#
 
  - ## read this first:
 
