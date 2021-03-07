@@ -13,15 +13,6 @@
     ```
 
 ## | usage:
-
- - ### training (since the dataset is private training is only possible for the authors):
-    
-    1. configure the wanted nationalities using  ```src/preprocessing.py``` or add the dataset to ```src/datasets/preprocessed_datasets/``` (this folder must then contain one file called ```matrix_name_list.pickle``` and ```nationality_classes.json```)
-
-    2. navigate to ```src/final_model```
-    3. edit ```train_model.py``` by specifing the dataset folder name, a descriptive name for the experiment/run
-    4. run ```train_model.py```
-
  - ### predicting multiple names and save the output
     ```
     python3 predict_ethnicity.py -c "names.csv" "predictions.csv"
