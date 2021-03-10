@@ -45,7 +45,7 @@ class ConvLSTM(nn.Module):
     def forward(self, x):
         x = self.embedder(x.type(torch.LongTensor).to(device=device))
         x = x.squeeze(2).transpose(1, 2)
-
+        
         x = self.conv1(x)
         # x = self.conv2(x)
         # x = self.conv3(x)

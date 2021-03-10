@@ -7,6 +7,8 @@ import os
 import json
 import wandb
 import argparse
+import sklearn
+import hashlib
 
 import torch
 import torch.utils.data
@@ -105,24 +107,31 @@ class TrainSetup:
         loss = np.mean(losses)
 
         # calculate accuracy
-        accuracy = validate_accuracy(total_targets, total_predictions, threshold=0.4)
+        accuracy = 100 * sklearn.metrics.accuracy_score(total_targets, total_predictions)
+        # own: accuracy = validate_accuracy(total_targets, total_predictions, threshold=0.4)
 
         # calculate precision, recall and F1 scores
-        precision_scores = precision(total_targets, total_predictions, classes=self.total_classes)
-        recall_scores = recall(total_targets, total_predictions, classes=self.total_classes)
-        f1_scores = f1_score(precision_scores, recall_scores)
+        precision_scores = sklearn.metrics.precision_score(total_targets, total_predictions, average=None)
+        # own: precision_scores = precision(total_targets, total_predictions, classes=self.total_classes)
 
+        recall_scores = sklearn.metrics.recall_score(total_targets, total_predictions, average=None)
+        # own: recall_scores = recall(total_targets, total_predictions, classes=self.total_classes)
+
+        f1_scores = sklearn.metrics.f1_score(total_targets, total_predictions, average=None)
+        # own: f1_scores = f1_score(precision_scores2, recall_scores2)
+    	
         # create confusion matrix
         if confusion_matrix:
-            create_confusion_matrix(total_targets, total_predictions, classes=self.classes, save="x-manager/" + self.model_name)
+            create_confusion_matrix(total_targets, total_predictions, classes=list(self.classes.keys()), save="x-manager/" + self.model_name)
         
         if plot_scores:
-            score_plot(precision_scores, recall_scores, f1_scores, self.classes, save="x-manager/" + self.model_name)
+            score_plot(precision_scores, recall_scores, f1_scores, list(self.classes.keys()), save="x-manager/" + self.model_name)
 
         return loss, accuracy, (precision_scores, recall_scores, f1_scores)
 
     def train(self):
-        wandb.init(project="name-ethnicity-classification", entity="theodorp", resume=self.continue_, config=self.model_config)
+        wandb_id = str(hashlib.sha256(self.model_name.encode("utf-8")).hexdigest())[:8]
+        wandb.init(project="name-ethnicity-final-models", entity="theodorp", id=wandb_id, resume=self.continue_, config=self.model_config)
 
         model = Model(class_amount=self.total_classes, hidden_size=self.hidden_size, layers=self.rnn_layers, dropout_chance=self.dropout_chance, \
                       embedding_size=self.embedding_size, kernel_size=self.kernel_size, channels=self.channels).to(device=device)
@@ -136,7 +145,6 @@ class TrainSetup:
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-5)
 
         iterations = 0
-        train_loss_history, train_accuracy_history, val_loss_history, val_accuracy_history = [], [], [], []
         for epoch in range(1, (self.epochs + 1)):
 
             total_train_targets, total_train_predictions = [], []
@@ -173,14 +181,10 @@ class TrainSetup:
 
             # calculate train loss and accuracy of last epoch
             epoch_train_loss = np.mean(epoch_train_loss)
-            epoch_train_accuracy = validate_accuracy(total_train_targets, total_train_predictions, threshold=0.4)
+            epoch_train_accuracy = 100 * sklearn.metrics.accuracy_score(total_train_targets, total_train_predictions)
 
             # calculate validation loss and accuracy of last epoch
             epoch_val_loss, epoch_val_accuracy, _ = self._validate(model, self.validation_set)
-
-            # log training stats
-            train_loss_history.append(epoch_train_loss); train_accuracy_history.append(epoch_train_accuracy)
-            val_loss_history.append(epoch_val_loss); val_accuracy_history.append(epoch_val_accuracy)
 
             # print training stats in pretty format
             show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy)
@@ -200,7 +204,6 @@ class TrainSetup:
         self.xmanager.plot_history(save=True)
 
     def test(self, print_amount: int=None, plot_confusion_matrix: bool=True, plot_scores: bool=True):
-
         model = Model(class_amount=self.total_classes, hidden_size=self.hidden_size, layers=self.rnn_layers, dropout_chance=0.0, \
                       embedding_size=self.embedding_size, kernel_size=self.kernel_size, channels=self.channels).to(device=device)
 
@@ -271,30 +274,4 @@ class TrainSetup:
         print("\nprecision of every class:", precisions)
         print("\nrecall of every class:", recalls)
         print("\nf1-score of every class:", f1_scores)
-
-
-    
-"""run = Run(model_file="models/final_20_and_else_model.pt",
-        model_name="20_and_else",
-        dataset_name="../../datasets/preprocessed_datasets/no_else_english_once",
-        # hyperparameters
-        test_size=0.05,
-        epochs=20,
-        lr=0.0035,
-        lr_schedule=(0.985, 105),
-        batch_size=1000,
-        hidden_size=200,
-        rnn_layers=2,
-        dropout_chance=0.3,
-        embedding_size=200,
-        # cnn_params=(3, 3, [32, 64, 128]),
-        cnn_params=(1, 3, [64]),
-        augmentation=0.5,
-        continue_=False)
-
-
-run.train()
-run.test(print_amount=200)
-"""
-
 

@@ -2,6 +2,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+# sklearn alternatives:
+# accuracy = 100 * sklearn.metrics.accuracy_score(total_targets, total_predictions)
+# precision_scores = sklearn.metrics.precision_score(total_targets, total_predictions, average=None)
+# recall_scores = sklearn.metrics.recall_score(total_targets, total_predictions, average=None)
+# f1_scores = sklearn.metrics.f1_score(total_targets, total_predictions, average=None)
+
 
 def validate_accuracy(y_true: list, y_pred: list, threshold: float) -> float:
     """ calculates the accuracy of predictions
@@ -22,12 +28,12 @@ def validate_accuracy(y_true: list, y_pred: list, threshold: float) -> float:
     return round((100 * correct_in_batch / len(y_true)), 5)
 
 
-def create_confusion_matrix(y_true: list, y_pred: list, classes: dict={}, save: str=None) -> None:
+def create_confusion_matrix(y_true: list, y_pred: list, classes: list=None, save: str=None) -> None:
     """ creates and plots a confusion matrix given two list (targets and predictions)
 
     :param list y_true: list of all targets (as indices of one-hot enc. vector)
     :param list y_pred: list of all predictions (as indices of one-hot enc. vector)
-    :param dict classes: a dictionary of the countries with they index representation
+    :param list classes: list of class names
     """
 
     amount_classes = len(classes)
@@ -42,11 +48,11 @@ def create_confusion_matrix(y_true: list, y_pred: list, classes: dict={}, save: 
     fig, ax = plt.subplots(1)
 
     ax.matshow(confusion_matrix)
-    ax.set_xticks(np.arange(len(list(classes.keys()))))
-    ax.set_yticks(np.arange(len(list(classes.keys()))))
+    ax.set_xticks(np.arange(len(classes)))
+    ax.set_yticks(np.arange(len(classes)))
 
-    ax.set_xticklabels(list(classes.keys()))
-    ax.set_yticklabels(list(classes.keys()))
+    ax.set_xticklabels(classes)
+    ax.set_yticklabels(classes)
 
     plt.setp(ax.get_xticklabels(), rotation=45, ha="left", rotation_mode="anchor")
     plt.setp(ax.get_yticklabels(), rotation=45, ha="right", rotation_mode="anchor")
@@ -154,8 +160,6 @@ def score_plot(precisions: list, recalls: list, f1_scores: list, classes: dict={
     plt.style.use("bmh")
 
     fig, axs = plt.subplots(1, 3)
-
-    classes = list(classes.keys())
 
     axs[0].bar(classes, precisions, color="steelblue", alpha=0.9)
     axs[0].set_xticklabels(classes, rotation=75)

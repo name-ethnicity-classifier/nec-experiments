@@ -7,7 +7,7 @@ import string
 from nltk import ngrams
 import json
 import re
-from gensim.models import Word2Vec
+# from gensim.models import Word2Vec
 
 
 class NameEthnicityDataset(torch.utils.data.Dataset):
