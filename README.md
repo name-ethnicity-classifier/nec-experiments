@@ -20,7 +20,7 @@
 
     There you will find different models which each classify a unique set of nationalities.
 
-    The "description.md" in each model folder will inform you about which ethnicities it can classify, its performance and more information you should know about it.
+    The "README.md" in each model folder will inform you about which ethnicities it can classify, its performance and more information you should know about it.
 
     When using the console interface, you can specify which model you want to use.
 

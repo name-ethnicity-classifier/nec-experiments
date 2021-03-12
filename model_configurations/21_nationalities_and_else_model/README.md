@@ -19,8 +19,8 @@
 
 ## | performance and result metrics:
  - accuracy: 81.08%
- - confusion matrix: ![confusion_matrix](figures/confusion_matrix.png)
- - recall, precision and f1-scores: ![confusion_matrix](figures/scores.png)
+ - confusion matrix: <br/> ![confusion_matrix](figures/confusion_matrix.png)
+ - recall, precision and f1-scores: <br/> ![confusion_matrix](figures/scores.png)
 
 #
 

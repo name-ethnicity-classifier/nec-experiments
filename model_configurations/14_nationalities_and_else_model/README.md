@@ -1,5 +1,5 @@
 
-# this model classifies 21 nationalities and the "else" category
+# this model classifies 14 nationalities and the "else" category
 
 ## | inputs:
  - must contain first and last name and can contain multiple middle names
@@ -22,8 +22,8 @@
 
 ## | performance and result metrics:
  - accuracy: 80.95%
- - confusion matrix: ![confusion_matrix](figures/confusion_matrix.png)
- - recall, precision and f1-scores: ![confusion_matrix](figures/scores.png)
+ - confusion matrix: <br/> ![confusion_matrix](figures/confusion_matrix.png)
+ - recall, precision and f1-scores: <br/> ![confusion_matrix](figures/scores.png)
 
 #
 
