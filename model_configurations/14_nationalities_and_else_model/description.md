@@ -2,7 +2,7 @@
 # this model classifies 21 nationalities and the "else" category
 
 ## | inputs:
- - must contain first and last name and can contain one or multiple middle names
+ - must contain first and last name and can contain multiple middle names
  - only the 26 letters of the standard latin alphabet and spaces allowed
 
 #
@@ -10,15 +10,18 @@
 ## | nationalities the model can classify:
 ```json
 {
-    "british": 0, "else": 1, "indian": 2, "hungarian": 3, 
-    "spanish": 4, "german": 5, "zimbabwean": 6, "polish": 7, "bulgarian": 8, "turkish": 9, "pakistani": 10, "italian": 11, "romanian": 12, "french": 13, "chinese": 14, "swedish": 15, "nigerian": 16, "greek": 17, "japanese": 18, "dutch": 19, "ukrainian": 20, "danish": 21, "russian": 22
+    "british": 0, "else": 1, "indian": 2,
+    "spanish": 3, "american": 4, "german": 5,
+    "polish": 6, "pakistani": 7, "italian": 8,
+    "romanian": 9, "french": 10, "chinese": 11,
+    "nigerian": 12, "japanese": 13,"russian": 14
 }
 ```
 
 #
 
 ## | performance and result metrics:
- - accuracy: 81.08%
+ - accuracy: 80.95%
  - confusion matrix: ![confusion_matrix](figures/confusion_matrix.png)
  - recall, precision and f1-scores: ![confusion_matrix](figures/scores.png)
 

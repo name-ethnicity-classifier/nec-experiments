@@ -1,0 +1,17 @@
+{
+    "british": 0,
+    "else": 1,
+    "indian": 2,
+    "spanish": 3,
+    "american": 4,
+    "german": 5,
+    "polish": 6,
+    "pakistani": 7,
+    "italian": 8,
+    "romanian": 9,
+    "french": 10,
+    "chinese": 11,
+    "nigerian": 12,
+    "japanese": 13,
+    "russian": 14
+}
