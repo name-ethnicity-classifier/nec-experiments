@@ -98,7 +98,7 @@ def create_dataloader(dataset_path: str="", test_size: float=0.01, val_size: flo
     return train_dataloader, val_dataloader, test_dataloader
 
 
-def show_progress(epochs: int, epoch: int, train_loss: float, train_accuracy: float, val_loss: float, val_accuracy: float):
+def show_progress(epochs: int, epoch: int, train_loss: float, train_accuracy: float, val_loss: float, val_accuracy: float, colored: bool=True):
     """ print training stats
     
     :param int epochs: amount of total epochs
@@ -107,13 +107,19 @@ def show_progress(epochs: int, epoch: int, train_loss: float, train_accuracy: fl
     :param float val_loss/val_accuracy: validation accuracy/loss
     :return None
     """
+    if colored:
+        epochs = colored(epoch, "cyan", attrs=["bold"]) + colored("/", "cyan", attrs=["bold"]) + colored(epochs, "cyan", attrs=["bold"])
+        train_accuracy = colored(round(train_accuracy, 4), "cyan", attrs=["bold"]) + colored("%", "cyan", attrs=["bold"])
+        train_loss = colored(round(train_loss, 6), "cyan", attrs=["bold"])
+        val_accuracy = colored(round(val_accuracy, 4), "cyan", attrs=["bold"]) + colored("%", "cyan", attrs=["bold"])
+        val_loss = colored(round(val_loss, 6), "cyan", attrs=["bold"])
+    else:
+        epochs = str(epoch) + "/" + str(epochs)
+        train_accuracy = str(round(train_accuracy, 4)) + "%"
+        train_loss = str(round(train_loss, 6))
+        val_accuracy = str(round(val_accuracy, 4)) + "%"
+        val_loss = str(round(val_loss, 6))
 
-    epochs = colored(epoch, "cyan", attrs=["bold"]) + colored("/", "cyan", attrs=["bold"]) + colored(epochs, "cyan", attrs=["bold"])
-    train_accuracy = colored(round(train_accuracy, 4), "cyan", attrs=["bold"]) + colored("%", "cyan", attrs=["bold"])
-    train_loss = colored(round(train_loss, 6), "cyan", attrs=["bold"])
-    val_accuracy = colored(round(val_accuracy, 4), "cyan", attrs=["bold"]) + colored("%", "cyan", attrs=["bold"])
-    val_loss = colored(round(val_loss, 6), "cyan", attrs=["bold"])
-    
     print("epoch {} train_loss: {} - train_acc: {} - val_loss: {} - val_acc: {}".format(epochs, train_loss, train_accuracy, val_loss, val_accuracy), "\n")
 
 

@@ -7,7 +7,7 @@ import os
 import json
 import wandb
 import argparse
-import sklearn
+import sklearn.metrics
 import hashlib
 
 import torch
@@ -36,17 +36,16 @@ class TrainSetup:
 
         # dataset parameters
         self.dataset_name = "../datasets/preprocessed_datasets//" + model_config["dataset-name"]
-        self.dataset_path = self.dataset_name + "/matrix_name_list.pickle"
+        self.dataset_path = self.dataset_name + "/dataset.pickle"
         self.test_size = model_config["test-size"]
 
-        with open(self.dataset_name + "/nationality_classes.json", "r") as f: 
+        with open(self.dataset_name + "/nationalities.json", "r") as f: 
             self.classes = json.load(f) 
             self.total_classes = len(self.classes)
 
         # hyperparameters
         self.epochs = model_config["epochs"]
         self.batch_size = model_config["batch-size"]
-        self.init_lr = model_config["init-learning-rate"]
         self.hidden_size = model_config["hidden-size"]
         self.rnn_layers = model_config["rnn-layers"]
         self.dropout_chance = model_config["dropout-chance"]
@@ -130,8 +129,8 @@ class TrainSetup:
         return loss, accuracy, (precision_scores, recall_scores, f1_scores)
 
     def train(self):
-        wandb_id = str(hashlib.sha256(self.model_name.encode("utf-8")).hexdigest())[:8]
-        wandb.init(project="name-ethnicity-final-models", entity="theodorp", id=wandb_id, resume=self.continue_, config=self.model_config)
+        # wandb_id = str(hashlib.sha256(self.model_name.encode("utf-8")).hexdigest())[:8]
+        # wandb.init(project="name-ethnicity-final-models", entity="theodorp", id=wandb_id, resume=self.continue_, config=self.model_config)
 
         model = Model(class_amount=self.total_classes, hidden_size=self.hidden_size, layers=self.rnn_layers, dropout_chance=self.dropout_chance, \
                       embedding_size=self.embedding_size, kernel_size=self.kernel_size, channels=self.channels).to(device=device)
@@ -139,7 +138,7 @@ class TrainSetup:
         if self.continue_:
             model.load_state_dict(torch.load(self.model_file))
 
-        wandb.watch(model)
+        # wandb.watch(model)
 
         criterion = nn.NLLLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=1e-5)
@@ -187,15 +186,15 @@ class TrainSetup:
             epoch_val_loss, epoch_val_accuracy, _ = self._validate(model, self.validation_set)
 
             # print training stats in pretty format
-            show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy)
+            show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy, colored=False)
             print("\nlr: ", optimizer.param_groups[0]["lr"], "\n")
 
             # save checkpoint of model
             torch.save(model.state_dict(), self.model_file)
 
             # log with wandb
-            wandb.log({"validation-accuracy": epoch_val_accuracy, "validation-loss": epoch_val_loss, "train-accuracy": epoch_train_accuracy, "train-loss": epoch_train_loss})
-            os.path.join(wandb.run.dir, "model2.pt")
+            # wandb.log({"validation-accuracy": epoch_val_accuracy, "validation-loss": epoch_val_loss, "train-accuracy": epoch_train_accuracy, "train-loss": epoch_train_loss})
+            # os.path.join(wandb.run.dir, "model2.pt")
 
             # log epoch results with xman (uncomment if you have the xman libary installed)
             self.xmanager.log_epoch(model, self.lr, self.batch_size, epoch_train_accuracy, epoch_train_loss, epoch_val_accuracy, epoch_val_loss)

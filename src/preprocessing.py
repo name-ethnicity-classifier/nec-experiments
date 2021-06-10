@@ -3,42 +3,16 @@ import random
 import os
 import json
 from tqdm import tqdm
+import argparse
 
 
-# the higher the variable number_of_names_per_country, the less nationalities are represented in the output matrix and the more names are given per nationality
-# recommended number_of_names_per_country:
-# level_medium_clusters: --> 5.500
-# level_big_clusters: --> 42.000
-
-number_of_names_per_country = 6000
-
-# only one of these boolean values should be true, it decides if the nationalities should be clusterred and in which way they should be clustered
-level_nationality = False
-level_medium_clusters = False
-level_big_clusters = False
-experimental = True
-minimum_per_country = 22000
-with open("datasets/raw_datasets/total_names_dataset.pickle", "rb") as o:
-    dict_chosen_names = pickle.load(o)
-
-# abc_dict is a dictionary where the letters "a"-"z" and " " and "-" are keys to lists representing these values in the matrix_name_list
-abc_dict = {}
-abc_list = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"," ","-"]
-# a = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-a = list(range(len(abc_list)))
-for i in range(len(abc_list)):
-    abc_dict[abc_list[i]] = a[i]
-
-
-def get_matrix_from_name(name,abc_dict):
-    # sub_names = name.split(" ")
-    # name = sub_names[0]
+def get_matrix_from_name(name: str, abc_dict: list):
     matrix = []
     for letter in name:
         matrix.append(abc_dict[letter])
     return matrix
 
-def get_name_from_matrix(matrix,abc_list):
+def get_name_from_matrix(matrix: list, abc_list: list):
     name = ""
     for letter in matrix:
         index = letter
@@ -46,128 +20,13 @@ def get_name_from_matrix(matrix,abc_list):
         name += letter
     return name
 
-amount_names_chountry = {}
-dict_chosen_names_2 = dict_chosen_names.copy()
-for key in dict_chosen_names_2:
-
-    if len(dict_chosen_names[key]) <= minimum_per_country:
-        dict_chosen_names.pop(key)
-    else:
-        amount_names_chountry[key]= len(dict_chosen_names[key])
-
-
-big_clusters_dict = {'european':['british', 'irish', 'german', 'dutch', 'swiss', 'danish', 'austrian','belgian', 'french', 'luxembourger', 'spanish', 'portugese', 'italian', 'romanian',
-                    'norwegian', 'swedish', 'finnish', 'icelandic', 'denmark','lithuanian', 'estonian', 'latvian', 'hungarian', 'polish', 'bulgarian', 'czech', 'albanian', 'slovak', 'slovenian', 'algerian', 'croatian', 'serbian', 'macedonian', 'georgian', 'citizen of bosnia and herzegovina', 'kosovan', 'belarusian',
-                     'cypriot', 'greek'],
-
-                    'asian':['russian', 'ukrainian', 'uzbek', 'moldovan', 'turkmen','kazakh','kyrgyz', 'chinese', 'japanese', 'south korean', 'taiwanese', 'hong konger','korean', 
-                    'indian', 'pakistani', 'nepalese', 'sri lankan', 'singaporean','bangladeshi', 'malaysian', 'fijian', 'thai', 'filipino', 'indonesian', 'burmese', 'vietnamese'],
-                    
-                    'african':['turkish', 'iraqi', 'iranian', 'israeli', 'yemeni', 'syrian', 'afghan', 'palestinian', 'kuwaiti', 'armenian', 'bahraini', 'lebanese', 'saudi arabian', 'azerbaijani', 'emirati','omani','qatari','jordanian','maltese',
-                    'egyptian', 'moroccan', 'tunisian','libyan', 'nigerian', 'cameroonian', 'ghanian', 'ugandan', 'nigerien', 'kenyan', 'gambian', 'ivorian', 'senegalese', 'eritrean', 'sierra leonean', 'congolese', 'somali', 'sudanese', 'ethiopian','angolan',
-                    'zimbabwean', 'south african', 'zambian', 'mauritian', 'malawian', 'tanzanian', 'botswanan', 'namibian','citizen of seychelles'],  
-                    
-                    'american':['canadian', 'american', 'new zealander','australian','mexican', 'dominican', 'trinidadian', 'barbadian', 'kittitian', 'st lucian','jamaican','british virgin islander', 'costa rican','grenadian','panamanian', 'cuban',
-                    'brazilian', 'colombian', 'argentinian', 'peruvian', 'venezuelan', 'ecuadorean','chilean', 'guyanese','bolivian','uruguayan']}
-medium_clusters_dict = {'anglo_european':['british'],
-
-                        'germanic':['german', 'dutch', 'swiss', 'danish', 'austrian'],
-
-                        'frankophone':['belgian', 'french', 'luxembourger'],
-
-                        'romanic':['spanish', 'portugese', 'italian', 'romanian'],
-
-                        'scandinavian':['norwegian', 'swedish', 'finnish', 'icelandic', 'denmark'],
-
-                        'slavic':['lithuanian', 'estonian', 'latvian', 'hungarian', 'polish', 'bulgarian', 'czech', 'albanian', 'slovak', 'slovenian', 'algerian', 'croatian', 'serbian', 'macedonian', 'georgian', 'citizen of bosnia and herzegovina', 'kosovan', 'belarusian'],
-
-                        'greco':['cypriot', 'greek'],
-                        
-                        'anglo_american':['canadian', 'american', 'new zealander','australian'],
-                        
-                        'north_asian':['russian', 'ukrainian', 'uzbek', 'moldovan', 'turkmen','kazakh','kyrgyz'],
-                        
-                        'central_asian':['chinese', 'japanese', 'south korean', 'taiwanese', 'hong konger','korean'],
-                        
-                        'south_asian':['indian', 'pakistani', 'nepalese', 'sri lankan', 'singaporean'],
-                        
-                        'east_asian':['bangladeshi', 'malaysian', 'fijian', 'thai', 'filipino', 'indonesian', 'burmese', 'vietnamese'],
-                        
-                        'middle_eastern':['turkish', 'iraqi', 'iranian', 'israeli', 'yemeni', 'syrian', 'afghan', 'palestinian', 'kuwaiti', 'armenian', 'bahraini', 'lebanese', 'saudi arabian', 'azerbaijani', 'emirati','omani','qatari','jordanian','maltese'],
-                        
-                        'north_african':['egyptian', 'moroccan', 'tunisian','libyan'],
-                        
-                        'central_african':['nigerian', 'cameroonian', 'ghanian', 'ugandan', 'nigerien', 'kenyan', 'gambian', 'ivorian', 'senegalese', 'eritrean', 'sierra leonean', 'congolese', 'somali', 'sudanese', 'ethiopian','angolan'],
-                        
-                        'south_african':['zimbabwean', 'south african', 'zambian', 'mauritian', 'malawian', 'tanzanian', 'botswanan', 'namibian','citizen of seychelles'],
-                        
-                        'central_american':['mexican', 'dominican', 'trinidadian', 'barbadian', 'kittitian', 'st lucian','jamaican','british virgin islander', 'costa rican','grenadian','panamanian', 'cuban'],
-                        
-                        'south_american':['brazilian', 'colombian', 'argentinian', 'peruvian', 'venezuelan', 'ecuadorean','chilean', 'guyanese','bolivian','uruguayan']}
-
-experimental_dict = {'british':['british'],#
-                    'indian':['indian'],#
-                    'german':['german'],#
-                    'polish':['polish'],#
-                    'russian':['russian'],#
-                    'italian':['italian'],#
-                    'romanian':['romanian'],#
-                    'french':['french'],#
-                    'chinese':['chinese'],#
-                    'japanese':['japanese'],#
-                    'spanish':['spanish'],#
-                    'danish':['danish'],#
-                    'turkish':['turkish'],#
-                    'pakistani':['pakistani'],#
-                    'greek':['greek'],
-                    'bulgarian':['bulgarian'],
-                    'swedish': ['swedish'],#
-                    'dutch':['dutch'],
-                    'ukrainian':['ukrainian'],#
-                    'nigerian':['nigerian'],
-                    'hungarian':['hungarian'],
-                    'zimbabwean':['zimbabwean']}
-                    
-                    
-""",
-'else':['irish', 'filipino', 'taiwanese', 'hong konger', 'swiss', 'austrian', 'luxembourger', 'portugese',
-'norwegian', 'finnish', 'icelandic', 'denmark','lithuanian', 'estonian', 'latvian', 'albanian', 'slovak', 'slovenian', 'algerian', 'croatian', 'serbian', 'macedonian', 'georgian', 'citizen of bosnia and herzegovina', 'kosovan', 'belarusian',
-'cypriot', 'uzbek', 'moldovan', 'turkmen','kazakh','kyrgyz', 
-'nepalese', 'sri lankan', 'singaporean','bangladeshi', 'malaysian', 'fijian', 'thai', 'indonesian', 'burmese', 'vietnamese',
-'iraqi', 'iranian', 'yemeni', 'syrian', 'afghan', 'palestinian', 'kuwaiti', 'armenian', 'bahraini', 'lebanese', 'saudi arabian', 'azerbaijani', 'emirati','omani','qatari','jordanian','maltese',
-'egyptian', 'moroccan', 'tunisian','libyan', 'cameroonian', 'ghanian', 'ugandan', 'nigerien', 'kenyan', 'gambian', 'ivorian', 'senegalese', 'eritrean', 'sierra leonean', 'congolese', 'somali', 'sudanese', 'ethiopian','angolan',
-'zambian', 'mauritian', 'malawian', 'tanzanian', 'botswanan', 'namibian','citizen of seychelles',
-'canadian', 'mexican', 'dominican', 'trinidadian', 'barbadian', 'kittitian', 'st lucian','jamaican','british virgin islander', 'costa rican','grenadian','panamanian', 'cuban',
-'brazilian', 'colombian', 'argentinian', 'peruvian', 'venezuelan', 'ecuadorean','chilean', 'guyanese','bolivian','uruguayan']}"""
-
-""" original
-experimental_dict = {'british':['british'],
-                    'indian':['indian'],
-                    'american':['american'],
-                    'german':['german'],
-                    'polish':['polish'],
-                    'pakistani':['pakistani'],
-                    'italian':['italian'],
-                    'romanian':['romanian'],
-                    'french':['french'],
-                    'chinese':['chinese'],
-                    'else':['irish', 'japanese', 'spanish', 'filipino', 'dutch', 'nigerian', 'south korean', 'taiwanese', 'hong konger','korean', 'swiss', 'danish', 'austrian','belgian', 'luxembourger', 'portugese',
-                    'norwegian', 'swedish', 'finnish', 'icelandic', 'denmark','lithuanian', 'estonian', 'latvian', 'hungarian', 'bulgarian', 'czech', 'albanian', 'slovak', 'slovenian', 'algerian', 'croatian', 'serbian', 'macedonian', 'georgian', 'citizen of bosnia and herzegovina', 'kosovan', 'belarusian',
-                    'cypriot', 'greek', 'russian', 'ukrainian', 'uzbek', 'moldovan', 'turkmen','kazakh','kyrgyz', 
-                    'nepalese', 'sri lankan', 'singaporean','bangladeshi', 'malaysian', 'fijian', 'thai', 'indonesian', 'burmese', 'vietnamese',
-                    'turkish', 'iraqi', 'iranian', 'israeli', 'yemeni', 'syrian', 'afghan', 'palestinian', 'kuwaiti', 'armenian', 'bahraini', 'lebanese', 'saudi arabian', 'azerbaijani', 'emirati','omani','qatari','jordanian','maltese',
-                    'egyptian', 'moroccan', 'tunisian','libyan', 'cameroonian', 'ghanian', 'ugandan', 'nigerien', 'kenyan', 'gambian', 'ivorian', 'senegalese', 'eritrean', 'sierra leonean', 'congolese', 'somali', 'sudanese', 'ethiopian','angolan',
-                    'zimbabwean', 'south african', 'zambian', 'mauritian', 'malawian', 'tanzanian', 'botswanan', 'namibian','citizen of seychelles',
-                    'canadian', 'new zealander','mexican', 'dominican', 'trinidadian', 'barbadian', 'kittitian', 'st lucian','jamaican','british virgin islander', 'costa rican','grenadian','panamanian', 'cuban',
-                    'brazilian', 'colombian', 'argentinian', 'peruvian', 'venezuelan', 'ecuadorean','chilean', 'guyanese','bolivian','uruguayan']}"""
-
-def handle_clusters(nationality, dict_clusters):
+def handle_clusters(nationality: str, dict_clusters: dict):
     for key in dict_clusters:
         if nationality in dict_clusters[key]:
             return key
     return 'other'
 
-def max_per_cluster(cluster_dict, amount_names_country):  
+def max_per_cluster(cluster_dict: dict, amount_names_country: dict):
     max_per_cluster = {}
     for key in cluster_dict:
 
@@ -179,142 +38,153 @@ def max_per_cluster(cluster_dict, amount_names_country):
                     smallest = amount_names_country[country]
 
         for country in cluster_dict[key]:
-            max_per_cluster[country]=smallest
+            max_per_cluster[country] = smallest
 
     return max_per_cluster
 
-if level_medium_clusters == True:
-    max_per_cluster = max_per_cluster(medium_clusters_dict, amount_names_chountry)
-elif level_big_clusters == True:
-    max_per_cluster = max_per_cluster(big_clusters_dict, amount_names_chountry)
-elif experimental == True:
-    max_per_cluster = max_per_cluster(experimental_dict, amount_names_chountry)
 
-# matrix_name_dict is a dictionary with the keys representing countries and the values being lists that store matrixes that represent names of nationals of that country.
-# The keys are integers, in the dictionary nationality_to_number_dict these integers are keys to the actual country names.
-matrix_name_dict = {}
-nationality_to_number_dict = {}
-number = 0
+def preprocess(dataset_name: str="", nationalities: str="", raw_dataset_path: str=""):
+    # load raw dataset
+    with open(raw_dataset_path, "rb") as o:
+        dict_chosen_names = pickle.load(o)
 
-# this filepath must contain a file with 3 values seperates by commas in each line, the first being a nationality, the second a first name of someone with that nationality
-# and the third their last name.
+    # set lower limit of names per country if wanted
+    minimum_per_country = 1
 
-for key in dict_chosen_names:
+    # abc_dict is a dictionary where the letters "a"-"z" and " " and "-" are keys to lists representing these values in the matrix_name_list
+    abc_dict = {}
+    abc_list = ["a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"," ","-"]
+    a = list(range(len(abc_list)))
+    for i in range(len(abc_list)):
+        abc_dict[abc_list[i]] = a[i]
 
-    try:
-        if not level_nationality == True:
-            max_nat = max_per_cluster[key]
+    # get name amount per country
+    amount_names_chountry = {}
+    dict_chosen_names_2 = dict_chosen_names.copy()
+    for key in dict_chosen_names_2:
+
+        if len(dict_chosen_names[key]) <= minimum_per_country:
+            dict_chosen_names.pop(key)
+        else:
+            amount_names_chountry[key]= len(dict_chosen_names[key])
+
+    # create nationality selection dictionary
+    all_nationalities = ['british', 'indian', 'american', 'german', 'polish', 'pakistani', 'italian', 'romanian', 'french', 'chinese', 'irish', 'japanese', 'spanish', 'filipino', 'dutch', 'nigerian', 'south korean', 'taiwanese', 'hong konger','korean', 'swiss', 'danish', 'austrian','belgian', 'luxembourger', 'portugese',
+                        'norwegian', 'swedish', 'finnish', 'icelandic', 'denmark','lithuanian', 'estonian', 'latvian', 'hungarian', 'bulgarian', 'czech', 'albanian', 'slovak', 'slovenian', 'algerian', 'croatian', 'serbian', 'macedonian', 'georgian', 'citizen of bosnia and herzegovina', 'kosovan', 'belarusian',
+                        'cypriot', 'greek', 'russian', 'ukrainian', 'uzbek', 'moldovan', 'turkmen','kazakh','kyrgyz', 
+                        'nepalese', 'sri lankan', 'singaporean','bangladeshi', 'malaysian', 'fijian', 'thai', 'indonesian', 'burmese', 'vietnamese',
+                        'turkish', 'iraqi', 'iranian', 'israeli', 'yemeni', 'syrian', 'afghan', 'palestinian', 'kuwaiti', 'armenian', 'bahraini', 'lebanese', 'saudi arabian', 'azerbaijani', 'emirati','omani','qatari','jordanian','maltese',
+                        'egyptian', 'moroccan', 'tunisian','libyan', 'cameroonian', 'ghanian', 'ugandan', 'nigerien', 'kenyan', 'gambian', 'ivorian', 'senegalese', 'eritrean', 'sierra leonean', 'congolese', 'somali', 'sudanese', 'ethiopian','angolan',
+                        'zimbabwean', 'south african', 'zambian', 'mauritian', 'malawian', 'tanzanian', 'botswanan', 'namibian','citizen of seychelles',
+                        'canadian', 'new zealander','mexican', 'dominican', 'trinidadian', 'barbadian', 'kittitian', 'st lucian','jamaican','british virgin islander', 'costa rican','grenadian','panamanian', 'cuban',
+                        'brazilian', 'colombian', 'argentinian', 'peruvian', 'venezuelan', 'ecuadorean','chilean', 'guyanese','bolivian','uruguayan']
+        
+    chosen_nationalities_dict = {}
+    available_nationalities = all_nationalities.copy()
+    for nationality in nationalities:
+        if nationality == "else":
+            continue
+
+        chosen_nationalities_dict[nationality] = [nationality]
+        available_nationalities.pop(available_nationalities.index(nationality))
+        
+    if "else" in nationalities:
+        chosen_nationalities_dict["else"] = available_nationalities
+
+    # gather equally distributed names of all chosen countries
+    max_per_cluster_dict = max_per_cluster(chosen_nationalities_dict, amount_names_chountry)
+    matrix_name_dict = {}
+    nationality_to_number_dict = {}
+    number = 0
+
+    for key in tqdm(dict_chosen_names):
+        try:
+
+            max_nat = max_per_cluster_dict[key]
             counter = 0
 
-        list_of_names = dict_chosen_names[key]
-        random.shuffle(list_of_names)
+            list_of_names = dict_chosen_names[key]
+            random.shuffle(list_of_names)
 
-        all_names = []
+            all_names = []
+            for name in list_of_names:
+                name = name.lower()
 
-        for name in tqdm(list_of_names):
-            name = name.lower()
-            # remove "dr", "ms", "mr", "mrs"
-            if name.split(" ")[0] == "dr" or name.split(" ")[0] == "mr" or name.split(" ")[0] == "ms" or name.split(" ")[0] == "miss" or name.split(" ")[0] == "mrs":
-                space_idx = name.strip().index(" ")
-                name = name[space_idx:]
+                # remove "dr", "ms", "mr", "mrs"
+                if name.split(" ")[0] == "dr" or name.split(" ")[0] == "mr" or name.split(" ")[0] == "ms" or name.split(" ")[0] == "miss" or name.split(" ")[0] == "mrs":
+                    space_idx = name.strip().index(" ")
+                    name = name[space_idx:]
 
-            # remove weird space before name
-            if list(name)[0] == " ":
-                name = name[1:]
+                # remove random spaces before name
+                if list(name)[0] == " ":
+                    name = name[1:]
 
-            if not level_nationality == True:
                 if counter <= max_nat:
                     name = name.strip()
                     nationality = key
 
                     org_nat = nationality
-                    if level_big_clusters == True:
-                        nationality = handle_clusters(nationality, big_clusters_dict)
-                    elif level_medium_clusters == True:
-                        nationality = handle_clusters(nationality, medium_clusters_dict)
-                    elif experimental == True:
-                        nationality = handle_clusters(nationality, experimental_dict)
+                    nationality = handle_clusters(nationality, chosen_nationalities_dict)
+
                     if nationality not in nationality_to_number_dict and nationality != 'other':
-                        nationality_to_number_dict[nationality]= number
+                        nationality_to_number_dict[nationality] = number
                         number += 1
                         matrix_name_dict[nationality_to_number_dict[nationality]]=[get_matrix_from_name(name, abc_dict)]
                     elif nationality in nationality_to_number_dict and nationality != 'other':
                         matrix_name_dict[nationality_to_number_dict[nationality]]+=[get_matrix_from_name(name, abc_dict)]       
                     counter += 1
-            else:
-                name = name.strip()
-                nationality = key
-                org_nat = nationality
-                if level_big_clusters == True:
-                    nationality = handle_clusters(nationality, big_clusters_dict)
-                elif level_medium_clusters == True:
-                    nationality = handle_clusters(nationality, medium_clusters_dict)
-                elif experimental == True:
-                    nationality = handle_clusters(nationality, experimental_dict)
-                if nationality not in nationality_to_number_dict and nationality!= 'other':
-                    nationality_to_number_dict[nationality]= number
-                    number += 1
-                    matrix_name_dict[nationality_to_number_dict[nationality]]=[get_matrix_from_name(name, abc_dict)]
-                elif nationality in nationality_to_number_dict and nationality!= 'other':
-                        matrix_name_dict[nationality_to_number_dict[nationality]]+=[get_matrix_from_name(name, abc_dict)]
-    except:
+                else:
+                    name = name.strip()
+                    nationality = key
+                    org_nat = nationality
+                    nationality = handle_clusters(nationality, chosen_nationalities_dict)
+
+                    if nationality not in nationality_to_number_dict and nationality!= 'other':
+                        nationality_to_number_dict[nationality]= number
+                        number += 1
+                        matrix_name_dict[nationality_to_number_dict[nationality]]=[get_matrix_from_name(name, abc_dict)]
+                    elif nationality in nationality_to_number_dict and nationality!= 'other':
+                            matrix_name_dict[nationality_to_number_dict[nationality]]+=[get_matrix_from_name(name, abc_dict)]
+        except:
             pass
 
-# matrix_name_list is a list with sub-lists, each sublist containing a matrix representing a name on index 1 and a number representing a nationality on index 0.
-matrix_name_list = []
-nr_of_countries = 0
-list_countries_used = []
+    matrix_name_list = []
+    nr_of_countries = 0
+    list_countries_used = []
 
-minimum_per_country = min([len(matrix_name_dict[country]) for country in matrix_name_dict])
-for country in matrix_name_dict:
+    minimum_per_country = min([len(matrix_name_dict[country]) for country in matrix_name_dict])
+    for country in matrix_name_dict:
 
-    if len(matrix_name_dict[country]) >= minimum_per_country:
+        if len(matrix_name_dict[country]) >= minimum_per_country:
+            list_countries_used += [country]
+            nr_of_countries += 1
+            names = matrix_name_dict[country]
+            random.shuffle(names)
+            names = names[:minimum_per_country]
 
-        list_countries_used += [country]
-        nr_of_countries += 1
-        names = matrix_name_dict[country]
-        random.shuffle(names)
-        names = names[:minimum_per_country]
-        for name in names:
-            matrix_name_list += [[nr_of_countries,name]]
-random.shuffle(matrix_name_list)
+            for name in names:
+                matrix_name_list += [[nr_of_countries, name]]
 
+    random.shuffle(matrix_name_list)
 
-""" SAVE DATASET FILES """
+    """ SAVE DATASET FILES """
 
-DATASET_NAME = "no_else_english_once"
-dataset_path = "datasets/preprocessed_datasets/" + DATASET_NAME
+    dataset_path = "datasets/preprocessed_datasets/" + dataset_name
+    if not os.path.exists(dataset_path):
+        os.mkdir(dataset_path)
 
-if not os.path.exists(dataset_path):
-    os.mkdir(dataset_path)
+    with open(dataset_path + "/dataset.pickle", "wb+") as o:
+        pickle.dump(matrix_name_list, o, pickle.HIGHEST_PROTOCOL)
 
-print(len(matrix_name_list), len(matrix_name_list) / len(matrix_name_dict))
+    names_countries_used = {}
+    for i, element in enumerate(list_countries_used):
+        country_name = list(nationality_to_number_dict.keys())[list(nationality_to_number_dict.values()).index(element)]
+        names_countries_used[country_name] = i
 
-with open(dataset_path + "/matrix_name_list.pickle", "wb+") as o:
-    pickle.dump(matrix_name_list, o, pickle.HIGHEST_PROTOCOL)
-
-names_countries_used = {}
-for i, element in enumerate(list_countries_used):
-    country_name = list(nationality_to_number_dict.keys())[list(nationality_to_number_dict.values()).index(element)]
-    names_countries_used[country_name] = i
-
-filepath = dataset_path + "/nationality_to_number_dict.json"
-with open(filepath, 'w+') as f:
-    json.dump(names_countries_used, f, indent=4)
+    filepath = dataset_path + "/nationalities.json"
+    with open(filepath, 'w+') as f:
+        json.dump(names_countries_used, f, indent=4)
 
 
 
-
-
-
-# code to extract matrix name list from file again:
-"""with open("datasets/preprocessed_datasets/final_prename_matrix_name_list.pickle",'rb') as o:
-    matrix_name_list = pickle.load(o)
-
-#example of how to access country-code and name:
-#country code:
-print(matrix_name_list[5][0])
-#name:
-print(get_name_from_matrix(matrix_name_list[5][1], abc_list))"""
-
-
+preprocess(dataset_name="test-dataset", nationalities=["british", "else", "pakistani", "german", "chinese", "spanish", "italian", "dutch"], raw_dataset_path="datasets/raw_datasets/total_names_dataset.pickle")

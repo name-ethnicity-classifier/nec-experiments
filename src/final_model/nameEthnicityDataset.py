@@ -1,13 +1,10 @@
 
-import torchvision
 import torch
 import pickle
 import numpy as np
 import string
-from nltk import ngrams
 import json
 import re
-# from gensim.models import Word2Vec
 
 
 class NameEthnicityDataset(torch.utils.data.Dataset):
@@ -26,9 +23,6 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         self.seperat_dataset = self.dataset.copy()
         np.random.shuffle(self.seperat_dataset)
 
-        # self.unigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_unigram_model.model")
-        # self.bigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_bigram_model.model")
-        # self.trigram_char2vec_embedder = Word2Vec.load("../datasets/char2vec/gensim_trigram_model.model")
 
     def _preprocess_targets(self, int_representation: int, one_hot: bool=True) -> list:
         """ create one-hot encoding of the target
@@ -93,7 +87,8 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
             return int_name, int_name
 
     def _create_n_gram(self, int_name: list, n: int=1) -> list:
-        """ create n-gram sample from index representation
+        """ (please don't look at this function, it's not used and it's O(n^{inf}))
+            create n-gram sample from index representation
 
         :param list int_name: integer/index representation of the name
         :return list: n-gram integer/index representation of the name
@@ -143,14 +138,6 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
 
         if self.augmentation > 0.0:
             int_name = self._name_switch(int_name, target, chance=self.augmentation)
-
-        #int_name_n1 = int_name
-        # int_name_n2 = self._create_n_gram(int_name, n=2)
-        # int_name_n3 = self._create_n_gram(int_name, n=3)
-
-        # int_name_n1 = [self.unigram_char2vec_embedder[str(i)] for i in int_name_n1]
-        # int_name_n2 = [self.bigram_char2vec_embedder[str(i)] for i in int_name_n2]
-        # int_name_n3 = [self.trigram_char2vec_embedder[str(i)] for i in int_name_n3]
 
         target = self._preprocess_targets(target, one_hot=False)
         

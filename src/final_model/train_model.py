@@ -5,13 +5,13 @@ import argparse
 
 model_config = {
     # name of the model/experiment in general (choose descriptive name, the .pt file will have the same name and store the parameters of the model)
-    "model-name": "my_model",
+    "model-name": "<model-/experiment-/run- name>",
 
     # path to the dataset folder (must contain "matrix_name_list.pickle" and "nationality_classes.json" and be stored in "../datasets/preprocessed_datasets/")
-    "dataset-name": "14_nat_and_else",
+    "dataset-name": "<dataset name>",
     
-    # percentage of the test and validation set
-    "test-size": 0.05,
+    # percentage of the test and validation set (separately)
+    "test-size": 0.1,
 
     # name of the optimizer (changing "optimizer" in this config won't make a difference, the optimizer has to be changed in the "train_setup.py" by hand)
     "optimizer": "Adam",
@@ -23,13 +23,10 @@ model_config = {
     "epochs": 15,
 
     # batch size
-    "batch-size": 1000,
-
-    # initial learning rate (DON'T change when resuming the training, change "lr-schedule[0]" instead!)
-    "init-learning-rate": 0.0035,
+    "batch-size": 512,
 
     # cnn parameters (idx 0: amount of layers, idx 1: kernel size, idx 2: list of feature map dimensions)
-    "cnn-parameters": [1, 3, [64]],
+    "cnn-parameters": [1, 3, [256]],
     
     # hidden size of the LSTM
     "hidden-size": 200, 
@@ -38,8 +35,8 @@ model_config = {
     "rnn-layers": 2,
 
     # learning-rate parameters (idx 0: current lr, idx 1: decay rate, idx 2: decay intervall in iterations), 
-    # change current lr when resuming the training to the learning rate of the last checkpoint
-    "lr-schedule": [0.0029, 0.9875, 100],
+    # change current lr (idx 0) when resuming the training to the learning rate of the last checkpoint (last two values don't have to be changed)
+    "lr-schedule": [0.001, 0.95, 100],
 
     # dropout change of the LSTM output
     "dropout-chance": 0.3,
@@ -48,28 +45,50 @@ model_config = {
     "embedding-size": 200,
 
     # augmentation chance (name part switching will slow down the training process when set high)
-    "augmentation": 0.5,
+    "augmentation": 0.2,
 
     # when resume is true: replace the first element of "lr-schedule" (the current lr) with the learning rate of the last checkpoint
     "resume": True
 }
 
+# DATASET CREATION:
+#   - go into "preprocessing.py" and specify (in the "preprocess()" function call at th end of the file) which nationalities you want to use and what the name of the dataset should be
 
-# for automatic training read the dataset and model configuration as flags
-parser = argparse.ArgumentParser()
-parser.add_argument("-d", "--datasetPath", required=False, help="path to the dataset folder")
-parser.add_argument("-m", "--modelPath", required=False, help="path to the model file")
-parser.add_argument("-n", "--sessionName", required=False, help="name for this model")
+#   - run "python preprocessing.py", this will create a folder "datasets/preprocessed_datasets/<your-chosen-dataset-name>" in which there is "dataset.pickle" and "nationalities.json"
 
-args = vars(parser.parse_args())
-if args["datasetPath"] != None:
-    model_config["dataset-name"] = args["datasetPath"]
-if args["modelPath"] != None:
-    model_config["model-file"] = args["modelPath"]
-if args["sessionName"] != None:
-    model_config["model-name"] = args["sessionName"]
+
+# TRAINING AND TESTING:
+
+#   - in the config above change: "model-name" to the name of this model/run/experiment (a descriptive name, e.g. "5_european_nat_and_else")
+
+#   - in the config above change: "dataset-name" to the name of the dataset you want to use, e.g. the one you created in step 1
+
+#   - run (this file) "python train_model.py"
+
+#   - when you break the training and want to start new: copy the last learning-rate in the console (looks like this for example: "lr: 0.00095213")
+
+#     and replace it with the first argument of "lr-schedule" in the config above, and set "resume" to "True"!
+
+#   - when you just want to test the model, comment out "train_setup.train()" and run this file
+
 
 # train and test
 train_setup = TrainSetup(model_config)
 train_setup.train()
 train_setup.test(print_amount=500, plot_confusion_matrix=True, plot_scores=True)
+
+
+
+
+
+# THIS IS BEING REWORKED
+# for automatic training read the dataset and model configuration as flags
+# parser = argparse.ArgumentParser()
+# parser.add_argument("-n", "--sessionName", required=False, help="name for this model")
+# parser.add_argument("-d", "--datasetName", required=False, help="path to the dataset folder")
+# 
+# args = vars(parser.parse_args())
+# if args["sessionName"] != None:
+#     model_config["model-name"] = args["sessionName"]
+# if args["datasetName"] != None:
+#     model_config["dataset-name"] = args["datasetName"]
