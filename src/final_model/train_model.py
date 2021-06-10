@@ -52,22 +52,25 @@ model_config = {
 }
 
 # DATASET CREATION:
-#   - go into "preprocessing.py" and specify (in the "preprocess()" function call at th end of the file) which nationalities you want to use and what the name of the dataset should be
+#   - go into "preprocessing.py" and specify (in the "preprocess()" function call at the end of the file) which nationalities 
+#     you want to use and what the name of the dataset should be
 
-#   - run "python preprocessing.py", this will create a folder "datasets/preprocessed_datasets/<your-chosen-dataset-name>" in which there is "dataset.pickle" and "nationalities.json"
+#   - run "python preprocessing.py", this will create a folder "datasets/preprocessed_datasets/<your-chosen-dataset-name>" in which
+#     there are two files called "dataset.pickle" and "nationalities.json"
 
 
 # TRAINING AND TESTING:
 
-#   - in the config above change: "model-name" to the name of this model/run/experiment (a descriptive name, e.g. "5_european_nat_and_else")
+#   - in the config above change "model-name" to the name of this model/run/experiment 
+#     (a descriptive name, e.g. "5_european_nat_and_else", it can also be the name as your dataset name)
 
-#   - in the config above change: "dataset-name" to the name of the dataset you want to use, e.g. the one you created in step 1
+#   - in the config above change "dataset-name" to the name of the dataset you want to use
 
 #   - run (this file) "python train_model.py"
 
-#   - when you break the training and want to start new: copy the last learning-rate in the console (looks like this for example: "lr: 0.00095213")
-
-#     and replace it with the first argument of "lr-schedule" in the config above, and set "resume" to "True"!
+#   - when you break the training and want to start continue: copy the last learning-rate in the console (looks like this for example: "lr: 0.00095213")
+#     and replace it with the first argument of "lr-schedule" in the config above, and set "resume" to "True"! 
+#     (if you can't get the last learning-rate value you should start the training from the beginning)
 
 #   - when you just want to test the model, comment out "train_setup.train()" and run this file
 
