@@ -74,24 +74,7 @@ model_config = {
 
 #   - when you just want to test the model, comment out "train_setup.train()" and run this file
 
-
 # train and test
 train_setup = TrainSetup(model_config)
 train_setup.train()
 train_setup.test(print_amount=500, plot_confusion_matrix=True, plot_scores=True)
-
-
-
-
-
-# THIS IS BEING REWORKED
-# for automatic training read the dataset and model configuration as flags
-# parser = argparse.ArgumentParser()
-# parser.add_argument("-n", "--sessionName", required=False, help="name for this model")
-# parser.add_argument("-d", "--datasetName", required=False, help="path to the dataset folder")
-# 
-# args = vars(parser.parse_args())
-# if args["sessionName"] != None:
-#     model_config["model-name"] = args["sessionName"]
-# if args["datasetName"] != None:
-#     model_config["dataset-name"] = args["datasetName"]
