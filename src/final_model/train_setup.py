@@ -9,6 +9,7 @@ import wandb
 import argparse
 import sklearn.metrics
 import hashlib
+import shutil
 
 import torch
 import torch.utils.data
@@ -16,7 +17,7 @@ import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
 
 from model import ConvLSTM as Model
-from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string, lr_scheduler
+from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string, lr_scheduler, write_json, load_json
 from test_metrics import validate_accuracy, create_confusion_matrix, recall, precision, f1_score, score_plot
 import xman
 
@@ -35,7 +36,7 @@ class TrainSetup:
         self.model_file = "models/" + model_config["model-name"] + ".pt"
 
         # dataset parameters
-        self.dataset_name = "../datasets/preprocessed_datasets//" + model_config["dataset-name"]
+        self.dataset_name = "../datasets/preprocessed_datasets/" + model_config["dataset-name"]
         self.dataset_path = self.dataset_name + "/dataset.pickle"
         self.test_size = model_config["test-size"]
 
@@ -106,18 +107,18 @@ class TrainSetup:
         loss = np.mean(losses)
 
         # calculate accuracy
-        accuracy = 100 * sklearn.metrics.accuracy_score(total_targets, total_predictions)
-        # own: accuracy = validate_accuracy(total_targets, total_predictions, threshold=0.4)
+        # accuracy = 100 * sklearn.metrics.accuracy_score(total_targets, total_predictions)
+        accuracy = validate_accuracy(total_targets, total_predictions, threshold=0.4)
 
         # calculate precision, recall and F1 scores
-        precision_scores = sklearn.metrics.precision_score(total_targets, total_predictions, average=None)
-        # own: precision_scores = precision(total_targets, total_predictions, classes=self.total_classes)
+        # precision_scores = sklearn.metrics.precision_score(total_targets, total_predictions, average=None)
+        precision_scores = precision(total_targets, total_predictions, classes=self.total_classes)
 
-        recall_scores = sklearn.metrics.recall_score(total_targets, total_predictions, average=None)
-        # own: recall_scores = recall(total_targets, total_predictions, classes=self.total_classes)
+        # recall_scores = sklearn.metrics.recall_score(total_targets, total_predictions, average=None)
+        recall_scores = recall(total_targets, total_predictions, classes=self.total_classes)
 
-        f1_scores = sklearn.metrics.f1_score(total_targets, total_predictions, average=None)
-        # own: f1_scores = f1_score(precision_scores2, recall_scores2)
+        # f1_scores = sklearn.metrics.f1_score(total_targets, total_predictions, average=None)
+        f1_scores = f1_score(precision_scores, recall_scores)
     	
         # create confusion matrix
         if confusion_matrix:
@@ -274,3 +275,26 @@ class TrainSetup:
         print("\nrecall of every class:", recalls)
         print("\nf1-score of every class:", f1_scores)
 
+        save_model_configuration(self.dataset_name, self.model_name, self.model_config, self.classes, accuracy, [precisions, recalls, f1_scores])
+
+
+def save_model_configuration(dataset_name: str, model_name: str, model_config: dict, nationalities: dict, accuracy: float, scores: list):
+    directory = "../../model_configurations/" + model_name + "/"
+
+    if os.path.exists(directory):
+        print("\nError: The directory '{}' does already exist! Reinitializing.\n".format(directory))
+        shutil.rmtree(directory)
+
+    os.mkdir(directory)
+    write_json(directory + "/results.json", 
+        {
+            "accuracy": accuracy,
+            "precision-scores": scores[0],
+            "recall-scores": scores[1],
+            "f1-scores": scores[2]
+        }
+    )
+    write_json(directory + "config.json", model_config)
+
+    shutil.copyfile("models/" + model_name + ".pt", directory + "model.pt")
+    shutil.copyfile(dataset_name + "/nationalities.json", directory + "nationalities.json")

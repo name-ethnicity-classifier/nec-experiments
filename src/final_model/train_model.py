@@ -5,13 +5,13 @@ import argparse
 
 model_config = {
     # name of the model/experiment in general (choose descriptive name, the .pt file will have the same name and store the parameters of the model)
-    "model-name": "<model-/experiment-/run- name>",
+    "model-name": "chinese_vs_else",
 
     # path to the dataset folder (must contain "matrix_name_list.pickle" and "nationality_classes.json" and be stored in "../datasets/preprocessed_datasets/")
-    "dataset-name": "<dataset name>",
+    "dataset-name": "chinese_and_else",
     
     # percentage of the test and validation set (separately)
-    "test-size": 0.1,
+    "test-size": 0.2,
 
     # name of the optimizer (changing "optimizer" in this config won't make a difference, the optimizer has to be changed in the "train_setup.py" by hand)
     "optimizer": "Adam",
@@ -20,7 +20,7 @@ model_config = {
     "loss-function": "NLLLoss",
 
     # amount of epochs
-    "epochs": 15,
+    "epochs": 4,
 
     # batch size
     "batch-size": 512,
@@ -48,7 +48,7 @@ model_config = {
     "augmentation": 0.2,
 
     # when resume is true: replace the first element of "lr-schedule" (the current lr) with the learning rate of the last checkpoint
-    "resume": True
+    "resume": False
 }
 
 # DATASET CREATION:
@@ -76,5 +76,5 @@ model_config = {
 
 # train and test
 train_setup = TrainSetup(model_config)
-train_setup.train()
-train_setup.test(print_amount=500, plot_confusion_matrix=True, plot_scores=True)
+# train_setup.train()
+train_setup.test(print_amount=50, plot_confusion_matrix=True, plot_scores=False)

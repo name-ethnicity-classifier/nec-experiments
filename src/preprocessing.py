@@ -187,4 +187,4 @@ def preprocess(dataset_name: str="", nationalities: str="", raw_dataset_path: st
 
 
 
-preprocess(dataset_name="test-dataset", nationalities=["british", "else", "pakistani", "german", "chinese", "spanish", "italian", "dutch"], raw_dataset_path="datasets/raw_datasets/total_names_dataset.pickle")
+preprocess(dataset_name="chinese_and_else", nationalities=["chinese", "else"], raw_dataset_path="datasets/raw_datasets/total_names_dataset.pickle")

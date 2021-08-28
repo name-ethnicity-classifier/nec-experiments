@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import os
 import json
 from typing import List, Tuple
+import hashlib
 
 import torch
 import torch.utils.data
@@ -28,9 +29,11 @@ total_classes = len(classes)
 
 
 class Run:
-    def __init__(self, model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, lr_warmup_iterations: int=0, \
+    def __init__(self, run_name: str="", model_file: str="", dataset_path: str="", epochs: int=10, lr: float=0.001, lr_warmup_iterations: int=0, \
                         lr_decay: Tuple[float]=(100, 0.99), batch_size: int=32, threshold: float=0.5, num_heads: int=10, num_layers: int=1, dropout_chance: float=0.5, \
                         embedding_size: int=64, n_gram: List[int]=[1], continue_: bool=False):
+
+        self.run_name = run_name
 
         # model and dataset path
         self.model_file = model_file
@@ -79,7 +82,7 @@ class Run:
 
 
         # initialize experiment manager
-        self.xmanager = xman.ExperimentManager(experiment_name="experiment3_6layer_transformer", continue_=self.continue_)
+        self.xmanager = xman.ExperimentManager(experiment_name=self.run_name, continue_=self.continue_)
         self.xmanager.init(optimizer="Adam", 
                             loss_function="NLLLoss", 
                             epochs=self.epochs, 
@@ -143,7 +146,8 @@ class Run:
         return loss, accuracy, (precision_scores, recall_scores, f1_scores)
 
     def train(self):
-        wandb.init(project="name-ethnicity-classification", entity="theodorp", resume=self.continue_, config=self.config)
+        wandb_id = str(hashlib.sha256(self.run_name.encode("utf-8")).hexdigest())[:8]
+        wandb.init(project="name-ethnicity-classification", entity="theodorp", id=wandb_id, resume=self.continue_, config=self.config)
 
         model = Model(class_amount=total_classes, num_heads=self.num_heads, num_layers=self.num_layers, dropout_chance=self.dropout_chance, embedding_size=self.embedding_size).to(device=device)
         if self.continue_:
@@ -197,7 +201,7 @@ class Run:
             val_loss_history.append(epoch_val_loss); val_accuracy_history.append(epoch_val_accuracy)
 
             # print training stats in pretty format
-            show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy)
+            show_progress(self.epochs, epoch, epoch_train_loss, epoch_train_accuracy, epoch_val_loss, epoch_val_accuracy, colored=False)
             print("\nlr: {}".format(optimizer.param_groups[0]["lr"]))
 
             wandb.log({"validation-accuracy": epoch_val_accuracy, "validation-loss": epoch_val_loss, "train-accuracy": epoch_train_accuracy, "train-loss": epoch_train_loss})
@@ -272,16 +276,16 @@ class Run:
 
 run = Run(model_file="models/model3.pt",
             dataset_path="../../datasets/preprocessed_datasets/final_more_nationalities/matrix_name_list.pickle",
-            epochs=10,
+            epochs=2,
             # hyperparameters
             lr=0.0035,
-            lr_warmup_iterations=500,
+            lr_warmup_iterations=-1,
             lr_decay=(95, 0.9875),
             batch_size=300,
             threshold=0.4,
             num_heads=1,
             num_layers=3,
-            dropout_chance=0.2,
+            dropout_chance=0.0,
             embedding_size=300,
             n_gram=[1],
             continue_=False)

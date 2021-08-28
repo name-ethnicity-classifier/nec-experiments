@@ -5,11 +5,9 @@ import torch.nn.functional as F
 from torch.nn.utils.rnn import pad_packed_sequence
 import numpy as np
 import math
-from gensim.models import Word2Vec
 
-from utils import device
-
-
+#from utils import device
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
 class ConvLSTM(nn.Module):

@@ -14,4 +14,6 @@ src/datasets/raw_datasets/*
 src/datasets/unused_datasets/
 src/old-experiments/
 
+src/old_README.md
+
 wandb*

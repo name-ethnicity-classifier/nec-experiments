@@ -37,7 +37,6 @@ def get_flags() -> Union[list, str, str, int, str]:
     csv_names_group.add_argument("-o", "--output", required=False, help="path to .csv in which the names along with the predictions will be stores (file will be created if it doesn't exist; name freely selectable)")
     csv_names_group.add_argument("-d", "--device", required=False, help="must be either 'gpu' or 'cpu' (standard: 'gpu' if cuda support is detected, else 'cpu')")
     csv_names_group.add_argument("-b", "--batchsize", required=False, help="specifies how many names will be processed in parallel (standard: process all names in parallel; if it crashes choose a batch-size smaller than the amount of names in your .csv file; the bigger the batchsize the faster it will classify the names)")
-
     single_name_group.add_argument("-n", "--name", required=False, help="first and last name (upper-/ lower case doesn't matter)")
     parser.add_argument("-m", "--model", required=False, help="folder name of model configuration which can be chosen from 'model_configurations/' (standard: '21_nationalities_and_else_model')")
 
@@ -212,13 +211,4 @@ if __name__ == "__main__":
     # if a single name was parsed using -n/--name, print the predicition
     else:
         print("\nname: {} - predicted ethnicity: {}".format(names[0], ethnicities[0]))
-
-
-
-
-
-    
-
-
-
 

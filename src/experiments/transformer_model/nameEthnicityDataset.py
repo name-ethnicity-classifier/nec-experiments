@@ -19,7 +19,7 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         :param int class_amount: amount of classes(/nationalities) in the dataset
         """
 
-        self.dataset = dataset  # test: [:1000]
+        self.dataset = dataset # test: [:1000]
         self.class_amount = class_amount
 
         self.augmentation = augmentation
@@ -125,13 +125,15 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         :param int idx: index of dataset (iterator of training-loop)
         :return tensor: preprocessed sample and target
         """
+        CLS_TOKEN = 31
 
         sample, target = self.dataset[idx][1], self.dataset[idx][0]
 
         int_name = [e+1 for e in sample]
+        int_name.insert(0, CLS_TOKEN)
 
-        if self.augmentation:
-            int_name = self._augmentate(int_name)
+        #if self.augmentation:
+        #    int_name = self._augmentate(int_name)
 
         # int_name_n1 = int_name
         # int_name_n2 = self._create_n_gram(int_name, n=2)
@@ -145,6 +147,7 @@ class NameEthnicityDataset(torch.utils.data.Dataset):
         
         # non_padded_batch is the original batch, which is not getting padded so it can be converted back to string
         non_padded_sample = [e+1 for e in sample]
+        non_padded_sample.insert(0, CLS_TOKEN)
 
         if len(self.n_gram) == 1:
             int_name_n1 = int_name

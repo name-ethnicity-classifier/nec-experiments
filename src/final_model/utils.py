@@ -7,7 +7,7 @@ import torch
 import torch.utils.data
 import torch.nn as nn
 from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
-import pickle5 as pickle
+import pickle
 from termcolor import colored
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
@@ -207,5 +207,16 @@ def init_xavier_weights(m):
     """
     if isinstance(m, nn.RNN):
         nn.init.xavier_uniform_(m.weight_hh_l0.data)
+
+
+def load_json(file_path: str) -> dict:
+    with open(file_path, "r") as f:
+        return json.load(f)
+
+
+def write_json(file_path: str, content: dict) -> None:
+    with open(file_path, "w") as f:
+            json.dump(content, f, indent=4)
+
 
 

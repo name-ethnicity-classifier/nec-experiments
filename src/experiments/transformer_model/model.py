@@ -10,7 +10,6 @@ from utils import device, onehot_to_string
 
 
 
-""" POSITIONAL-ENCODER MODULE """
 class PositionalEncoder(nn.Module):
     def __init__(self, d_model):
         super().__init__()
@@ -42,7 +41,7 @@ class TransformerModel(nn.Module):
         self.num_layers = num_layers
         self.dropout_chance = dropout_chance
 
-        vocab_size = pow(26, 1) + 3
+        vocab_size = 33
         self.embedding_size = embedding_size
         self.embed = nn.Embedding(vocab_size, self.embedding_size)
         self.pe = PositionalEncoder(self.embedding_size)
@@ -73,7 +72,8 @@ class TransformerModel(nn.Module):
         x = self.transformer_encoder(x, src_key_padding_mask=mask)
         x[x != x] = 0.0
 
-        x = x.mean(1)
+        #x = x.mean(1)
+        x = x[:, 0]
 
         x = F.relu(self.linear1(x))
         #x = self.dropout1(x)
