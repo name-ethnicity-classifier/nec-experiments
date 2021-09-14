@@ -38,7 +38,7 @@ def get_flags() -> Union[list, str, str, int, str]:
     csv_names_group.add_argument("-d", "--device", required=False, help="must be either 'gpu' or 'cpu' (standard: 'gpu' if cuda support is detected, else 'cpu')")
     csv_names_group.add_argument("-b", "--batchsize", required=False, help="specifies how many names will be processed in parallel (standard: process all names in parallel; if it crashes choose a batch-size smaller than the amount of names in your .csv file; the bigger the batchsize the faster it will classify the names)")
     single_name_group.add_argument("-n", "--name", required=False, help="first and last name (upper-/ lower case doesn't matter)")
-    parser.add_argument("-m", "--model", required=False, help="folder name of model configuration which can be chosen from 'model_configurations/' (standard: '21_nationalities_and_else_model')")
+    parser.add_argument("-m", "--model", required=False, help="folder name of model configuration which can be chosen from 'model_configurations/' (standard: '21_nationalities_and_else')")
 
     args = vars(parser.parse_args())
 
@@ -66,7 +66,7 @@ def get_flags() -> Union[list, str, str, int, str]:
 
     # get model
     if args["model"] == None:
-        model_config_folder = "model_configurations/21_nationalities_and_else_model"
+        model_config_folder = "model_configurations/21_nationalities_and_else"
     elif os.path.exists("model_configurations/" + args["model"]):
         model_config_folder = "model_configurations/" + args["model"]
     else:
