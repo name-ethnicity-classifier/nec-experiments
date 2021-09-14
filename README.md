@@ -46,7 +46,7 @@
 
     -o, --output (required after -i): path to .csv in which the names along with the predictions will be stores (file will be created if it doesn't exist; name freely selectable)
 
-    -m, --model (optional): folder name of model configuration which can be chosen from "model_configurations/" (if this flag is not set the standard model will be "22_nationalities_and_else_model")
+    -m, --model (optional): folder name of model configuration which can be chosen from "model_configurations/" (if this flag is not set the standard model will be "22_nationalities_and_else")
 
     -d, --device (optional) : must be either "gpu" or "cpu" (if this flag is not set it be "gpu" if cuda support is detected)
 
@@ -84,7 +84,7 @@
     ```
     -n, --name : first and last name (upper-/ lower case doesn't matter)
     
-    -m, --model (optional): folder name of model configuration which can be chosen from "model_configurations/" (specifies which ethnicities can be classified; if this flag is not set the standard model will be "22_nationalities_and_else_model")
+    -m, --model (optional): folder name of model configuration which can be chosen from "model_configurations/" (specifies which ethnicities can be classified; if this flag is not set the standard model will be "22_nationalities_and_else")
     ```
 
 #
