@@ -126,7 +126,7 @@ def preprocess_names(names: list=[str], batch_size: int=128) -> torch.tensor:
     return padded_batch
     
 
-def predict(input_batch: torch.tensor, model_conifg: dict) -> str:
+def predict(input_batch: torch.tensor, model_config: dict) -> str:
     """ load model and predict preprocessed name
 
     :param torch.tensor input_batch: input-batch
@@ -137,15 +137,15 @@ def predict(input_batch: torch.tensor, model_conifg: dict) -> str:
 
     # prepare model (map model-file content from gpu to cpu if necessary)
     model = Model(
-                class_amount=model_conifg["amount-classes"], 
-                embedding_size=model_conifg["embedding-size"],
-                hidden_size=model_conifg["hidden-size"],
-                layers=model_conifg["rnn-layers"],
-                kernel_size=model_conifg["cnn-parameters"][0],
-                channels=model_conifg["cnn-parameters"][1]
+                class_amount=model_config["amount-classes"], 
+                embedding_size=model_config["embedding-size"],
+                hidden_size=model_config["hidden-size"],
+                layers=model_config["rnn-layers"],
+                kernel_size=model_config["cnn-parameters"][0],
+                channels=model_config["cnn-parameters"][1]
             ).to(device=device)
 
-    model_path = model_conifg["model-file"]
+    model_path = model_config["model-file"]
 
     if device != "cuda:0":
         model.load_state_dict(torch.load(model_path, map_location={"cuda:0": "cpu"}))
