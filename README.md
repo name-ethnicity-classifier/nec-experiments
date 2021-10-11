@@ -7,17 +7,7 @@
     git clone https://github.com/hollowcodes/name-ethnicity-classification.git
     cd name-ethnicity-classification/
     ```
-- dependencies: python-3.7, pytorch, numpy, pandas, conda recommended
-  
-- dependency installation using conda:
-    ```
-    conda create -n <env-name> python=3.7
-    conda activate <env-name>
-
-    conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
-    conda install numpy
-    conda install pandas
-    ```
+- dependencies: Python>=3.7, PyTorch, NumPy, Pandas
 
 ## | usage:
 
