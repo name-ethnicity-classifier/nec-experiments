@@ -10,7 +10,8 @@ import pandas as  pd
 import string
 from typing import Union
 import os
-
+import unicodedata
+import re
 import sys
 sys.path.insert(1, "src/final_model/")
 
@@ -93,6 +94,20 @@ def get_flags() -> Union[list, str, str, int, str]:
     return names, csv_out_path, model_config_folder, batch_size, device
 
 
+def replace_special_chars(name: str) -> str:
+    """ replaces all apostrophe letters with their base letters and removes all other special characters incl. numbers
+    
+    :param str name: name
+    :return str: normalized name
+    """
+
+    name = u"{}".format(name)
+    name = unicodedata.normalize("NFD", name).encode("ascii", "ignore").decode("utf-8")
+    name = re.sub("[^A-Za-z -]+", "", name)
+
+    return name
+
+
 def preprocess_names(names: list=[str], batch_size: int=128) -> torch.tensor:
     """ create a pytorch-usable input-batch from a list of string-names
     
@@ -103,15 +118,21 @@ def preprocess_names(names: list=[str], batch_size: int=128) -> torch.tensor:
 
     sample_batch = []
     for name in names:
+        try:
+            # remove special characters
+            name = replace_special_chars(name)
 
-        # create index-representation from string name, ie: "joe" -> [10, 15, 5], indices go from 1 ("a") to 28 ("-")
-        alphabet = list(string.ascii_lowercase.strip()) + [" ", "-"]
-        int_name = []
-        for char in name:
-            int_name.append(alphabet.index(char.lower()) + 1)
-        
-        name = torch.tensor(int_name)
-        sample_batch.append(name)
+            # create index-representation from string name, ie: "joe" -> [10, 15, 5], indices go from 1 ("a") to 28 ("-")
+            alphabet = list(string.ascii_lowercase.strip()) + [" ", "-"]
+            int_name = []
+            for char in name:
+                int_name.append(alphabet.index(char.lower()) + 1)
+            
+            name = torch.tensor(int_name)
+            sample_batch.append(name)
+
+        except:
+            raise ValueError("\nCould not process the name: '{}'! Aborting.".format(name))
 
     padded_batch = pad_sequence(sample_batch, batch_first=True)
 
@@ -206,7 +227,7 @@ if __name__ == "__main__":
         open(csv_out_path, "w+").close()
         df.to_csv(csv_out_path, index=False)
     
-        print("\nclassified all names and saved to {} .\n".format(csv_out_path))
+        print("\nClassified all names and saved to {} .\n".format(csv_out_path))
     
     # if a single name was parsed using -n/--name, print the predicition
     else:
