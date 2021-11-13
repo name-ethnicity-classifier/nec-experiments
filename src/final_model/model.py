@@ -24,15 +24,8 @@ class ConvLSTM(nn.Module):
 
         self.embedder = nn.Embedding(29, self.embedding_size)
 
-        self.conv1 = nn.Sequential(nn.Conv1d(200, self.channels[0], kernel_size=self.kernel_size),
+        self.conv1 = nn.Sequential(nn.Conv1d(self.embedding_size, self.channels[0], kernel_size=self.kernel_size),
                                    nn.ReLU())
-
-        # self.conv2 = nn.Sequential(nn.Conv1d(self.channels[0], self.channels[1], kernel_size=self.kernel_size),
-        #                            nn.BatchNorm1d(self.channels[1]),
-        #                            nn.ReLU())
-
-        # self.conv3 = nn.Sequential(nn.Conv1d(self.channels[1], self.channels[2], kernel_size=self.kernel_size),
-        #                           nn.ReLU())
         
         self.lstm = nn.LSTM(input_size=self.channels[-1], hidden_size=self.hidden_size, num_layers=self.layers, batch_first=True)
         
@@ -45,8 +38,6 @@ class ConvLSTM(nn.Module):
         x = x.squeeze(2).transpose(1, 2)
         
         x = self.conv1(x)
-        # x = self.conv2(x)
-        # x = self.conv3(x)
         x = x.transpose(1, 2)
 
         hidden = (torch.zeros(self.layers, x.size(0), self.hidden_size).to(device=device), torch.zeros(self.layers, x.size(0), self.hidden_size).to(device=device))
