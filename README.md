@@ -12,7 +12,7 @@
 ## the "winning" model:
  - ### the final model is a simple convolutional-lstm neural network which can be found [here](src/final_model/model.py).
  - ### we trained this model on multple sets of nationalities and made it usable in with console-interface program in our [name-ethnicity-classifier](https://github.com/name-ethnicity-classifier/name-ethnicity-classifier) repository.
- - ### architecture: <img src="readme_images/final_model.png">
+ - ### architecture: <img src="readme_images/final_model.PNG"> a
 
 <!---
 ---
