@@ -4,56 +4,63 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import json
-
 import torch
-import torch.utils.data
 import torch.nn as nn
-from torch.nn.utils.rnn import pad_sequence, pack_padded_sequence
-
-import os,sys,inspect
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
-
-from nameEthnicityDataset import NameEthnicityDataset
-from model import Model
-from utils import create_dataloader, show_progress, onehot_to_string, init_xavier_weights, device, char_indices_to_string
+import os
+from model import ConvLSTMEmbedder
+from utils import device, create_dataloader, load_json, write_json
 
 
+def get_embeddings(dataset_path: str, model_configuration_name: str):
+    # load model configuration
+    model_configuration = f"../../model_configurations/{model_configuration_name}/"
+    model_file = model_configuration + "model.pt"
+    classes = load_json(model_configuration + "nationalities.json")
+    amount_classes = len(classes)
+    hyperparameters = load_json(model_configuration + "config.json")
 
-with open("../datasets/final_nationality_to_number_dict.json", "r") as f: classes = json.load(f) 
-total_classes = len(classes)
+    # load trained model
+    model = ConvLSTMEmbedder(
+        class_amount=amount_classes, 
+        hidden_size=hyperparameters["hidden-size"], 
+        layers=hyperparameters["rnn-layers"], 
+        channels=[hyperparameters["cnn-parameters"][1][0], hyperparameters["cnn-parameters"][1][0]],
+        dropout_chance=0.0, 
+        embedding_size=hyperparameters["embedding-size"]
+    ).to(device=device)
 
-hidden_size = 256
-layers = 2
-dropout_chance = 0.0
-embedding_size = 128
-batch_size = 512
-dataset_path = "../datasets/final_matrix_name_list.pickle"
-model_file = "../models/model7.pt"
-
-embeddings_dataset_file = "dataset/lstm_embeddings_test.npy"
-
-
-def get_embeddings():
-    model = Model(class_amount=total_classes, hidden_size=hidden_size, layers=layers, dropout_chance=dropout_chance, embedding_size=embedding_size).to(device=device)
     model.load_state_dict(torch.load(model_file))
 
-    train_set, validation_set, test_set = create_dataloader(dataset_path=dataset_path, test_size=0.025, val_size=0.025, batch_size=batch_size, class_amount=total_classes, shuffle=False)
+    # create dataloader
+    dataset = create_dataloader(
+        dataset_path=dataset_path,
+        class_amount=amount_classes
+    )
     
-    total_lstm_embeddings = []
-    for names, targets, _ in tqdm(test_set, desc="", ncols=150):
-        names, targets = names.to(device=device), targets.to(device=device)
+    # iterate through all samples and save the embeddins
+    all_embeddings = []
+    for name, target, gender, year_of_birth in tqdm(dataset, desc="gathering embeddings", ncols=150):
+        name, target = name.to(device=device), target.to(device=device)
 
-        lstm_embeddings, _ = model.eval()(names, len(names[0]), len(names), return_lstm_embeddings=True)
+        embedding = model.eval()(name, return_embeddings=True)
+        embedding = embedding[0].cpu().detach().numpy()
+        target = target[0].cpu().detach().numpy()
 
-        for idx in range(lstm_embeddings.shape[0]):
-            lstm_embedding = lstm_embeddings[idx].cpu().detach().numpy()
-            target = targets[idx].cpu().detach().numpy()
+        all_embeddings.append([embedding, target, gender, year_of_birth])
+    
+    # create folder to save embeddings and classes
+    embedding_folder = f"./embeddings/{model_configuration_name}/"
+    if not os.path.exists(embedding_folder):
+        os.mkdir(embedding_folder)
+    
+    # save embeddings
+    open(embedding_folder + "embeddings.npy", "w+").close()
+    np.save(embedding_folder + "embeddings.npy", all_embeddings, allow_pickle=True)
 
-            total_lstm_embeddings.append([lstm_embedding, target])
+    # save classes
+    write_json(embedding_folder + "nationalities.json", classes)
 
-    np.save(embeddings_dataset_file, total_lstm_embeddings, allow_pickle=True)
 
-
-get_embeddings()
+if __name__ == "__main__":
+    model_configuration = "8_groups"
+    get_embeddings(f"../datasets/experiment_datasets/{model_configuration}/dataset.pickle", model_configuration)
